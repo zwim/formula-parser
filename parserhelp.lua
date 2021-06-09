@@ -1,5 +1,7 @@
 --[[
     Helper functions for formulaparser
+
+    Author: Martin Zwicknagl
 ]]
 
 math.e = math.exp(1)

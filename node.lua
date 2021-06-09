@@ -1,5 +1,7 @@
 --[[
     The parser datastructure
+
+    Author: Martin Zwicknagl
 ]]
 
 local Node = {
