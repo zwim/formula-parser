@@ -2,6 +2,7 @@
     Helper functions for formulaparser
 
     Author: Martin Zwicknagl
+    Version: 0.9.0
 ]]
 
 math.e = math.exp(1)
