@@ -1,6 +1,7 @@
 --[[ formula parser
 
 Author: Martin Zwicknagl
+Version: 0.9.0
 Original version from C# (2006; Martin Zwicknagl)
 Converted and optimized for LUA 2021
 

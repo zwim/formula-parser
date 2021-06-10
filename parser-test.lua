@@ -1,9 +1,8 @@
 --[[
-
     Testsuite for parser.lua
 
     Author: Martin Zwicknagl
-    version: 0.9.0
+    Version: 0.9.0
 ]]
 
 -- number of passes
