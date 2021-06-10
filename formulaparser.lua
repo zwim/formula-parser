@@ -26,7 +26,7 @@ end
 
 function Parser.help()
     return ParserHelp.help_text
-    end
+end
 
 function Parser.setVar(var, node)
     Parser.vars[var] = node
@@ -134,67 +134,68 @@ function Parser.divVal(l, r)
 end
 
 Parser.functions = { -- must be sorted alphabetically
-        {"(", ParserHelp.identity},
-        {"abs(", ParserHelp.abs},
-        {"acos(", ParserHelp.acos},
-        {"asin(", ParserHelp.asin},
-        {"atan(", ParserHelp.atan},
-        {"bug(", ParserHelp.bug},
-        {"cos(", ParserHelp.cos},
-        {"eval(", ParserHelp.eval},
-        {"exp(", ParserHelp.exp},
-        {"floor(", ParserHelp.floor},
-        {"getAngleMode(", ParserHelp.getAngleMode},
-        {"help(", Parser.help},
-        {"kill(", Parser.kill},
-        {"ld(", ParserHelp.log2},
-        {"ln(", ParserHelp.ln},
-        {"log(", ParserHelp.log},
-        {"rnd(", ParserHelp.rnd},
-        {"rndseed(", ParserHelp.randomseed},
-        {"round(", ParserHelp.round},
-        {"setdeg(", ParserHelp.setAngleDeg}, -- degree
-        {"setgon(", ParserHelp.setAngleGon}, -- gon
-        {"setrad(", ParserHelp.setAngleRad}, -- radiant
-        {"showvars(", Parser.showvars},
-        {"sin(", ParserHelp.sin},
-        {"sqrt(", ParserHelp.sqrt},
-        {"tan(", ParserHelp.tan},
-        {"√(", ParserHelp.sqrt}
-    }
+    {"(", ParserHelp.identity},
+    {"abs(", ParserHelp.abs},
+    {"acos(", ParserHelp.acos},
+    {"asin(", ParserHelp.asin},
+    {"atan(", ParserHelp.atan},
+    {"bug(", ParserHelp.bug},
+    {"cos(", ParserHelp.cos},
+    {"eval(", ParserHelp.eval},
+    {"exp(", ParserHelp.exp},
+    {"floor(", ParserHelp.floor},
+    {"getAngleMode(", ParserHelp.getAngleMode},
+    {"help(", Parser.help},
+    {"kill(", Parser.kill},
+    {"ld(", ParserHelp.log2},
+    {"ln(", ParserHelp.ln},
+    {"log(", ParserHelp.log},
+    {"rnd(", ParserHelp.rnd},
+    {"rndseed(", ParserHelp.randomseed},
+    {"round(", ParserHelp.round},
+    {"setdeg(", ParserHelp.setAngleDeg}, -- degree
+    {"setgon(", ParserHelp.setAngleGon}, -- gon
+    {"setrad(", ParserHelp.setAngleRad}, -- radiant
+    {"showvars(", Parser.showvars},
+    {"sin(", ParserHelp.sin},
+    {"sqrt(", ParserHelp.sqrt},
+    {"tan(", ParserHelp.tan},
+    {"√(", ParserHelp.sqrt}
+}
 
 Parser.operators = { -- must be sorted by priority, least priority first
-        -- operator, function, prio, right_assoziative=1 (ternary =-1, other values left)
-        {",", ParserHelp.seq, 0, 0},
-        {":=", Parser.storeTree, 1, 1},
-        {"+=", Parser.incVal, 1, 1},
-        {"-=", Parser.decVal, 1, 1},
-        {"*=", Parser.mulVal, 1, 1},
-        {"/=", Parser.divVal, 1, 1},
-        {"=", Parser.storeVal, 1, 1},
-        {"?:", ParserHelp.ternary, 2, -1},
-        {"||", ParserHelp.logOr, 3, 0},
-        {"&&", ParserHelp.logAnd, 4, 0},
-        {"!&", ParserHelp.logNand, 4, 0},
-        {"==", ParserHelp.eq, 8, 0},
-        {"!=", ParserHelp.ne, 8, 0},
-        {"<=", ParserHelp.le, 9, 0},
-        {">=", ParserHelp.ge, 9, 0},
-        {">", ParserHelp.gt, 9, 0},
-        {"<", ParserHelp.lt, 9, 0},
-        {"+", ParserHelp.add, 11, 0},
-        {"‒", ParserHelp.sub, 11, 0}, -- "‒" minus
-        {"-", ParserHelp.sub, 11, 0}, -- "-" sign
-        {"*", ParserHelp.mul, 12, 0},
-        {"/", ParserHelp.div, 12, 0},
-        {"%", ParserHelp.mod, 12, 0},
-        {"^", ParserHelp.pot, 13, 0},
-        {"!", ParserHelp.factorial, 14, 0}
-    }
+    -- operator, function, prio, right_assoziative=1 (ternary =-1, other values left)
+    {",", ParserHelp.seq, 0, 0},
+    {":=", Parser.storeTree, 1, 1},
+    {"+=", Parser.incVal, 1, 1},
+    {"-=", Parser.decVal, 1, 1},
+    {"*=", Parser.mulVal, 1, 1},
+    {"/=", Parser.divVal, 1, 1},
+    {"=", Parser.storeVal, 1, 1},
+    {"?:", ParserHelp.ternary, 2, -1},
+    {"||", ParserHelp.logOr, 3, 0},
+    {"&&", ParserHelp.logAnd, 4, 0},
+    {"!&", ParserHelp.logNand, 4, 0},
+    {"==", ParserHelp.eq, 8, 0},
+    {"!=", ParserHelp.ne, 8, 0},
+    {"<=", ParserHelp.le, 9, 0},
+    {">=", ParserHelp.ge, 9, 0},
+    {">", ParserHelp.gt, 9, 0},
+    {"<", ParserHelp.lt, 9, 0},
+    {"+", ParserHelp.add, 11, 0},
+    {"‒", ParserHelp.sub, 11, 0}, -- "‒" minus
+    {"-", ParserHelp.sub, 11, 0}, -- "-" sign
+    {"*", ParserHelp.mul, 12, 0},
+    {"/", ParserHelp.div, 12, 0},
+    {"%", ParserHelp.mod, 12, 0},
+    {"^", ParserHelp.pot, 13, 0},
+    {"!", ParserHelp.factorial, 14, 0}
+}
 
 Parser.vars = {ans = Node:new{val = 42}} -- predefine one variable
 
 function Parser:parse(str)
+    str = str:gsub("%/%*.*%*%/", "") -- remove comments
     str = str:gsub("%s+", "") -- remove whitespaces
     str = str:gsub("‒", "-") -- replace emdash with minus
     str = str:gsub("π", "pi") -- replace emdash with minus
@@ -305,8 +306,8 @@ function Parser:_parse(str)
     end
 
     -- find value
-    -- whe have done the number check at the beginning (for speed reasons)
-    --[[    if value then
+--[[ -- whe have done the number check at the beginning (for speed reasons)
+    if value then
         return Node:new{
             val = value,
         }

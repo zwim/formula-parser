@@ -1,12 +1,13 @@
 --[[
-    Testsuit for parser.lua
+    Testsuite for parser.lua
 
     Author: Martin Zwicknagl
     Version: 0.9.0
 ]]
 
 -- number of passes
-local passes = 100 -- set this for benchmark
+local passes = 20 -- set this for benchmark
+local repetitions = 16 -- how thorogh the test is
 math.randomseed(os.clock())
 
 -- local Parser = require("formulaparser")
@@ -17,11 +18,186 @@ print("This is a test for formulaparser.lua")
 print("Help")
 print(Parser:eval("help()"))
 
-local greek_alphabet = "α β γ δ ε ζ η ϑ ι ϰ λ μ ν ξ π ρ σ τ ϑ χ ψ ω"
+local greek_alphabet = "α β γ δ ε ζ η ϑ ι ϰ λ μ ν ξ π ρ σ τ φ χ ψ ω"
 local greek_alphabet_in_text = "alpha beta gamma delta epsilon zeta eta thita iota kappa lambda my ny xi pi rho sigma tau phi chi psi omega"
 
 print("THE ANSWER: " .. Parser:eval("ans") .. "\n")
 assert(Parser:eval("ans") == 42)
+
+assert(greek_alphabet_in_text == Parser:greek2text(greek_alphabet))
+assert(greek_alphabet == Parser:text2greek(greek_alphabet_in_text))
+
+------------------------------
+--local NAN = 0.0 / 0.0
+local NINF = -math.huge
+local PINF = math.huge
+function math.finite(value)
+    if type(value) == "string" then
+        value = tonumber(value)
+        if value == nil then return nil end
+    elseif type(value) ~= "number" then
+        return nil
+    end
+    return value > NINF and value < PINF
+end
+
+local function rnd(range)
+    if not range then range = 1e7 end
+    return math.random(range)
+end
+
+local function genVal(numer)
+    if not numer then
+        local l = rnd(10) >= 5
+        return tostring(l), tostring(l) -- return boolean
+    end
+    local nachkomma = 7
+    local r = rnd(100)
+    local vorz = rnd(1)
+    local val = rnd() % 10000000
+    if rnd(1) == 0 then
+        val = val + rnd(10 ^ nachkomma) / 10 ^ nachkomma
+    end
+    if r < 80 then
+        return "" .. val, val
+    elseif r < 70 then
+        if vorz == 0 then
+            val = -val
+        end
+        return string.format("%e", val), string.format("%e", val)
+    elseif r < 80 then
+        if vorz == 0 then
+            return "e", "math.exp(1)"
+        else
+            return "-e", "-math.exp(1)"
+        end
+    elseif r < 90 then
+        if vorz == 0 then
+            return "pi", "math.pi"
+        else
+            return "-pi", "-math.pi"
+        end
+    elseif r < 95 then
+        if vorz == 0 then
+            return "π", "math.pi"
+        else
+            return "-π", "-math.pi"
+        end
+    else
+        return "", ""
+    end
+    return "0", "0"
+end
+
+local function my_assert(a, b)
+    local expected, result, err
+    local lua_fun = loadstring("function() return " .. b .. " end")
+    --      print(a)
+    expected = lua_fun and pcall(lua_fun())
+    result, err = Parser:eval(a)
+    if math.finite(expected) and math.finite(result) then
+        if type(result) == "number" and type(expected) == "number" then
+            assert(math.abs(result - expected) /
+                       ((expected == 0) and 1 or expected) < 1e-12,
+                   string.format("%s  err:%s   %.20f==%.20f diff=%E\n", a,
+                                 tostring(err), result, expected,
+                                 result - expected))
+        elseif result == nil and expected == nil then
+            assert(result == expected,
+                   string.format("%s  err:%s   %s==%s\n", a, tostring(err),
+                                 tostring(result), tostring(expected)))
+        else
+            print("????")
+        end
+    end
+end
+
+local function optest(values, op1, op2)
+    local a, b, x, y
+
+    -- a is for parser, b is for loadstring
+
+    if values == 1 then -- numbers
+        a, b = genVal(10)
+        x, y = genVal(10)
+    elseif values == 0 then -- boolean
+        a, b = genVal()
+        x, y = genVal()
+    else
+        if rnd(2) == 1 then -- mixed
+            a, b = genVal()
+            x, y = genVal(10)
+        else
+            a, b = genVal(10)
+            x, y = genVal(0)
+        end
+    end
+    a = a .. op1 .. x
+    if op1 == "!=" then op1 = "~=" end
+    b = "" .. b .. op1 .. y
+
+    if rnd(2) == 1 then
+        a = "(" .. a .. ")"
+        b = "(" .. b .. ")"
+    end
+
+    if op2 then
+        x, y = genVal(10)
+        a = a .. op2 .. x
+        if op2 == "!=" then op2 = "~=" end
+        b = "" .. b .. op2 .. y
+    end
+
+    if rnd(5) == 1 then
+        a = "(" .. a .. ")"
+        b = "(" .. b .. ")"
+    end
+
+   my_assert(a, b)
+end
+
+local function rep_optest(a, b, c, d)
+    for _ = 1, d or 100 do optest(a, b, c) end
+end
+
+local function functest1(values, op, func)
+    local a, b, x, y
+    -- a is for parser, b is for loadstring
+    if values == 1 then -- numbers
+        a, b = genVal(10)
+        x, y = genVal(10)
+    elseif values == 0 then -- boolean
+        a, b = genVal()
+        x, y = genVal()
+    else
+        if rnd(2) == 1 then -- mixed
+            a, b = genVal()
+            x, y = genVal(10)
+        else
+            a, b = genVal(10)
+            x, y = genVal(0)
+        end
+    end
+
+    local aa, bb
+    -- e.g. 3*sin(5)
+    aa=        a .. op .. func .. x .. ")"
+    bb = "" .. b .. op .. func .. y .. ")"
+    my_assert(aa, bb)
+
+    -- e.g. 3*sin(5)
+    aa =       func .. a .. op .. x .. ")"
+    bb = "" .. func .. b .. op .. y .. ")"
+    my_assert(aa, bb)
+end
+---------------------------------
+
+
+
+
+
+
+
 
 for number = 0, passes do
 
@@ -134,7 +310,7 @@ for number = 0, passes do
     Parser:eval("setrad()")
 
     assert(Parser:eval("sin(3*pi)") == math.sin(3 * math.pi))
-    assert(Parser:eval("asin(0.3)") == math.asin(0.3))
+    my_assert("asin(0.3)","math.asin(0.3)")
     assert(Parser:eval("cos(0.3)") == math.cos(0.3))
     assert(Parser:eval("acos(0.3)") == math.acos(0.3))
     assert(Parser:eval("tan(0.3)") == math.tan(0.3))
@@ -155,8 +331,7 @@ for number = 0, passes do
     assert(Parser:eval("atan(1)") == 45)
     assert(Parser:eval("atan(0.3)") == math.atan(0.3) / math.pi * 180)
 
-    assert(Parser:eval("asin(sin(45))") == math.asin(math.sin(math.pi / 4)) *
-               180 / math.pi)
+    my_assert("asin(sin(45))", "math.asin(math.sin(math.pi / 4)) * 180 / math.pi")
     assert(Parser:eval("acos(cos(0))") == math.acos(math.cos(0)))
     assert(Parser:eval("atan(tan(0.1))") == math.atan(math.tan(0.1)))
 
@@ -350,264 +525,33 @@ for number = 0, passes do
     val, err = Parser:eval("(1+2)/=4")
     assert(val == nil or err ~= nil)
 
-    local NAN = 0.0 / 0.0
-    local NINF = -math.huge
-    local PINF = math.huge
-    function math.finite(value)
-        if type(value) == "string" then
-            value = tonumber(value)
-            if value == nil then return nil end
-        elseif type(value) ~= "number" then
-            return nil
-        end
-        return value > NINF and value < PINF
-    end
-
-    local function rnd(range)
-        if not range then range = 1e7 end
-        return math.random(range)
-    end
-
-    local function genVal(numer)
-        if not numer then
-            local l = rnd(10) >= 5
-            return tostring(l), tostring(l) -- return boolean
-        end
-        local nachkomma = 7
-        local r = rnd(100)
-        local vorz = rnd(1)
-        local val = rnd() % 10000000
-        if rnd(1) == 0 then
-            val = val + rnd(10 ^ nachkomma) / 10 ^ nachkomma
-        end
-        if r < 80 then
-            return "" .. val, val
-        elseif r < 70 then
-            if rnd(1) == 0 then
-                return string.format("%e", val), string.format("%e", val)
-            else
-                return string.format("%e", -val), string.format("%e", -val)
-            end
-        elseif r < 80 then
-            if vorz == 0 then
-                return "e", "math.exp(1)"
-            else
-                return "-e", "-math.exp(1)"
-            end
-        elseif r < 90 then
-            if vorz == 0 then
-                return "pi", "math.pi"
-            else
-                return "-pi", "-math.pi"
-            end
-        elseif r < 95 then
-            if vorz == 0 then
-                return "π", "math.pi"
-            else
-                return "-π", "-math.pi"
-            end
-        else
-            return "", ""
-        end
-        return "0", "0"
-    end
-
-    local expected, result
-
-    local function optest(values, op1, op2)
-        local a, b, x, y
-
-        -- a is for parser, b is for loadstring
-
-        if values == 1 then -- numbers
-            a, b = genVal(10)
-            x, y = genVal(10)
-        elseif values == 0 then -- boolean
-            a, b = genVal()
-            x, y = genVal()
-        else
-            if rnd(2) == 1 then -- mixed
-                a, b = genVal()
-                x, y = genVal(10)
-            else
-                a, b = genVal(10)
-                x, y = genVal(0)
-            end
-        end
-        a = a .. op1 .. x
-        if op1 == "!=" then op1 = "~=" end
-        b = "" .. b .. op1 .. y
-
-        if rnd(2) == 1 then
-            a = "(" .. a .. ")"
-            b = "(" .. b .. ")"
-        end
-
-        if op2 then
-            x, y = genVal(100)
-            a = a .. op2 .. x
-            if op2 == "!=" then op2 = "~=" end
-            b = "" .. b .. op2 .. y
-        end
-
-        if rnd(5) == 1 then
-            a = "(" .. a .. ")"
-            b = "(" .. b .. ")"
-        end
-
-        local lua_fun = loadstring("function() return " .. b .. " end")
-        --      print(b)
-        expected = lua_fun and pcall(lua_fun())
-        result, err = Parser:eval(a)
-        if math.finite(expected) and math.finite(result) then
-            if type(result) == "number" and type(expected) == "number" then
-                assert(math.abs(result - expected) /
-                           ((expected == 0) and 1 or expected) < 1e-12,
-                       string.format("%s  err:%s   %.20f==%.20f diff=%E\n", a,
-                                     tostring(err), result, expected,
-                                     result - expected))
-            elseif result == nil and expected == nil then
-                assert(result == expected,
-                       string.format("%s  err:%s   %s==%s\n", a, tostring(err),
-                                     tostring(result), tostring(expected)))
-            else
-                print("????")
-            end
-        end
-
-        return result, err, expected
-    end
-
-    local function rep_optest(a, b, c, d)
-        for _ = 1, d or 100 do optest(a, b, c) end
-    end
-
-    local function functest1(values, op, func)
-        local a, b, x, y
-
-        -- a is for parser, b is for loadstring
-
-        if values == 1 then -- numbers
-            a, b = genVal(10)
-            x, y = genVal(10)
-        elseif values == 0 then -- boolean
-            a, b = genVal()
-            x, y = genVal()
-        else
-            if rnd(2) == 1 then -- mixed
-                a, b = genVal()
-                x, y = genVal(10)
-            else
-                a, b = genVal(10)
-                x, y = genVal(0)
-            end
-        end
-
-        a = a .. op .. func .. x .. ")"
-        b = "" .. b .. op .. func .. y .. ")"
-
-        if rnd(2) == 1 then
-            a = "(" .. a .. ")"
-            b = "(" .. b .. ")"
-        end
-
-        local lua_fun = loadstring("function() return " .. b .. " end")
-        --      print(b)
-        expected = lua_fun and pcall(lua_fun())
-        result, err = Parser:eval(a)
-        if math.finite(expected) and math.finite(result) then
-            if type(result) == "number" and type(expected) == "number" then
-                assert(math.abs(result - expected) /
-                           ((expected == 0) and 1 or expected) < 1e-12,
-                       string.format("%s  err:%s   %.20f==%.20f diff=%E\n", a,
-                                     tostring(err), result, expected,
-                                     result - expected))
-            elseif result == nil and expected == nil then
-                assert(result == expected,
-                       string.format("%s  err:%s   %s==%s\n", a, tostring(err),
-                                     tostring(result), tostring(expected)))
-            else
-                print("????")
-            end
-        end
-
-        return result, err, expected
-    end
-
-    local function functest2(values, op, func)
-        local a, b, x, y
-
-        -- a is for parser, b is for loadstring
-
-        if values == 1 then -- numbers
-            a, b = genVal(10)
-            x, y = genVal(10)
-        elseif values == 0 then -- boolean
-            a, b = genVal()
-            x, y = genVal()
-        else
-            if rnd(2) == 1 then -- mixed
-                a, b = genVal()
-                x, y = genVal(10)
-            else
-                a, b = genVal(10)
-                x, y = genVal(0)
-            end
-        end
-
-        a = func .. a .. op .. x .. ")"
-        b = func .. b .. op .. y .. ")"
-
-        local lua_fun = loadstring("function() return " .. b .. " end")
-        --      print(a)
-        expected = lua_fun and pcall(lua_fun())
-        result, err = Parser:eval(a)
-        if math.finite(expected) and math.finite(result) then
-            if type(result) == "number" and type(expected) == "number" then
-                assert(math.abs(result - expected) /
-                           ((expected == 0) and 1 or expected) < 1e-12,
-                       string.format("%s  err:%s   %.20f==%.20f diff=%E\n", a,
-                                     tostring(err), result, expected,
-                                     result - expected))
-            elseif result == nil and expected == nil then
-                assert(result == expected,
-                       string.format("%s  err:%s   %s==%s\n", a, tostring(err),
-                                     tostring(result), tostring(expected)))
-            else
-                print("????")
-            end
-        end
-
-        return result, err, expected
-    end
-
-    local operators = {
-        "+", "-", "*", "/", "%", "^", "<", ">", "<=", ">=", "==", "!="
-    }
-    local operators_math = {"+", "-", "*", "/", "^"}
+    local operators = {"+", "-", "*", "/", "%", "^", "<", ">", "<=", ">=", "==", "!="}
+    local operators_math = {"+", "-", "*", "/", "%", "^"}
     local operators_logic = {"||", "&&", "!&"}
     local operators_comparison = {"<", ">", "<=", ">=", "==", "!="}
 
-    for _, op1 in pairs(operators_math) do
+   for _, op1 in pairs(operators_math) do
         for _, op2 in pairs(operators_math) do
-            rep_optest(1, op1, op2, passes)
+            rep_optest(1, op1, op2, repetitions)
         end
     end
 
     for _, op1 in pairs(operators_logic) do
         for _, op2 in pairs(operators_comparison) do
-            rep_optest(1, op1, op2, passes)
+            rep_optest(1, op1, op2, repetitions)
         end
     end
 
     for _, op1 in pairs(operators_logic) do
         for _, op2 in pairs(operators_logic) do
-            rep_optest(0, op1, op2, passes)
+            rep_optest(0, op1, op2, repetitions)
         end
     end
 
     for _, op1 in pairs(operators) do
-        for _, op2 in pairs(operators) do rep_optest(2, op1, op2, passes) end
+        for _, op2 in pairs(operators) do
+            rep_optest(2, op1, op2, repetitions)
+        end
     end
 
     local functions = {
@@ -616,14 +560,11 @@ for number = 0, passes do
         "setrad(", "sin(", "sqrt(", "tan(", "√("
     } -- rnd can not be tested so
 
-    for _, op in pairs(operators) do
-        for _, func in pairs(functions) do
+    for _, func in pairs(functions) do
+        for _, op in pairs(operators) do
             functest1(1, op, func)
             functest1(0, op, func)
             functest1(2, op, func)
-            functest2(1, op, func)
-            functest2(0, op, func)
-            functest2(2, op, func)
         end
     end
 
