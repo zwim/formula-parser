@@ -195,6 +195,7 @@ Parser.operators = { -- must be sorted by priority, least priority first
 Parser.vars = {ans = Node:new{val = 42}} -- predefine one variable
 
 function Parser:parse(str)
+    str = str:gsub("%/%*.*%*%/", "") -- remove comments
     str = str:gsub("%s+", "") -- remove whitespaces
     str = str:gsub("‒", "-") -- replace emdash with minus
     str = str:gsub("π", "pi") -- replace emdash with minus
