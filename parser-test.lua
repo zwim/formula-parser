@@ -18,8 +18,8 @@ print("This is a test for formulaparser.lua")
 print("Help")
 print(Parser:eval("help()"))
 
-local greek_alphabet = "α β γ δ ε ζ η ϑ ι ϰ λ μ ν ξ π ρ σ τ φ χ ψ ω"
-local greek_alphabet_in_text = "alpha beta gamma delta epsilon zeta eta thita iota kappa lambda my ny xi pi rho sigma tau phi chi psi omega"
+local greek_alphabet = "α β γ δ ε ζ η ϑ ι ϰ λ μ ν ξ π ρ σ τ φ χ ψ ω Σ"
+local greek_alphabet_in_text = "alpha beta gamma delta epsilon zeta eta thita iota kappa lambda my ny xi pi rho sigma tau phi chi psi omega Sigma"
 
 print("THE ANSWER: " .. Parser:eval("ans") .. "\n")
 assert(Parser:eval("ans") == 42)
