@@ -1,3 +1,3 @@
-# formula-parser
+# formulaparser
 
 coming soon...
