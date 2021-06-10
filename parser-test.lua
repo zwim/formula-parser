@@ -1,5 +1,9 @@
---[[ Testsuit for parser.lua
-Author: Martin Zwicknagl
+--[[
+
+    Testsuite for parser.lua
+
+    Author: Martin Zwicknagl
+    version: 0.9.0
 ]]
 
 -- number of passes
@@ -380,11 +384,10 @@ for number = 0, passes do
         if r < 80 then
             return "" .. val, val
         elseif r < 70 then
-            if rnd(1) == 0 then
-                return string.format("%e", val), string.format("%e", val)
-            else
-                return string.format("%e", -val), string.format("%e", -val)
+            if vorz == 0 then
+                val = -val
             end
+            return string.format("%e", val), string.format("%e", val)
         elseif r < 80 then
             if vorz == 0 then
                 return "e", "math.exp(1)"
@@ -409,7 +412,29 @@ for number = 0, passes do
         return "0", "0"
     end
 
-    local expected, result
+    local function my_assert(a, b)
+        local expected, result, err
+        local lua_fun = loadstring("function() return " .. b .. " end")
+        --      print(a)
+        expected = lua_fun and pcall(lua_fun())
+        result, err = Parser:eval(a)
+        if math.finite(expected) and math.finite(result) then
+            if type(result) == "number" and type(expected) == "number" then
+                assert(math.abs(result - expected) /
+                           ((expected == 0) and 1 or expected) < 1e-12,
+                       string.format("%s  err:%s   %.20f==%.20f diff=%E\n", a,
+                                     tostring(err), result, expected,
+                                     result - expected))
+            elseif result == nil and expected == nil then
+                assert(result == expected,
+                       string.format("%s  err:%s   %s==%s\n", a, tostring(err),
+                                     tostring(result), tostring(expected)))
+            else
+                print("????")
+            end
+        end
+    end
+
 
     local function optest(values, op1, op2)
         local a, b, x, y
@@ -452,27 +477,7 @@ for number = 0, passes do
             b = "(" .. b .. ")"
         end
 
-        local lua_fun = loadstring("function() return " .. b .. " end")
-        --      print(b)
-        expected = lua_fun and pcall(lua_fun())
-        result, err = Parser:eval(a)
-        if math.finite(expected) and math.finite(result) then
-            if type(result) == "number" and type(expected) == "number" then
-                assert(math.abs(result - expected) /
-                           ((expected == 0) and 1 or expected) < 1e-12,
-                       string.format("%s  err:%s   %.20f==%.20f diff=%E\n", a,
-                                     tostring(err), result, expected,
-                                     result - expected))
-            elseif result == nil and expected == nil then
-                assert(result == expected,
-                       string.format("%s  err:%s   %s==%s\n", a, tostring(err),
-                                     tostring(result), tostring(expected)))
-            else
-                print("????")
-            end
-        end
-
-        return result, err, expected
+       my_assert(a, b)
     end
 
     local function rep_optest(a, b, c, d)
@@ -508,27 +513,7 @@ for number = 0, passes do
             b = "(" .. b .. ")"
         end
 
-        local lua_fun = loadstring("function() return " .. b .. " end")
-        --      print(b)
-        expected = lua_fun and pcall(lua_fun())
-        result, err = Parser:eval(a)
-        if math.finite(expected) and math.finite(result) then
-            if type(result) == "number" and type(expected) == "number" then
-                assert(math.abs(result - expected) /
-                           ((expected == 0) and 1 or expected) < 1e-12,
-                       string.format("%s  err:%s   %.20f==%.20f diff=%E\n", a,
-                                     tostring(err), result, expected,
-                                     result - expected))
-            elseif result == nil and expected == nil then
-                assert(result == expected,
-                       string.format("%s  err:%s   %s==%s\n", a, tostring(err),
-                                     tostring(result), tostring(expected)))
-            else
-                print("????")
-            end
-        end
-
-        return result, err, expected
+        my_assert(a, b)
     end
 
     local function functest2(values, op, func)
@@ -555,27 +540,7 @@ for number = 0, passes do
         a = func .. a .. op .. x .. ")"
         b = func .. b .. op .. y .. ")"
 
-        local lua_fun = loadstring("function() return " .. b .. " end")
-        --      print(a)
-        expected = lua_fun and pcall(lua_fun())
-        result, err = Parser:eval(a)
-        if math.finite(expected) and math.finite(result) then
-            if type(result) == "number" and type(expected) == "number" then
-                assert(math.abs(result - expected) /
-                           ((expected == 0) and 1 or expected) < 1e-12,
-                       string.format("%s  err:%s   %.20f==%.20f diff=%E\n", a,
-                                     tostring(err), result, expected,
-                                     result - expected))
-            elseif result == nil and expected == nil then
-                assert(result == expected,
-                       string.format("%s  err:%s   %s==%s\n", a, tostring(err),
-                                     tostring(result), tostring(expected)))
-            else
-                print("????")
-            end
-        end
-
-        return result, err, expected
+        my_assert(a, b)
     end
 
     local operators = {

@@ -14,8 +14,6 @@ local Node = {
 
 function Node:new(o)
     if not o then o = {} end
-    setmetatable(o, self)
-    self.__index = self
     return o
 end
 
