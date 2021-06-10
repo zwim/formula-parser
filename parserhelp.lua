@@ -456,6 +456,7 @@ ParserHelp.greek = {
     {"χ", "chi"},
     {"ψ", "psi"},
     {"ω", "omega"},
+    {"Σ", "Sigma"},
 }
 
 return ParserHelp
