@@ -99,7 +99,7 @@ Examples:
     4!=4     -> false
     x=3>4?1:-1 -> -1, set x=-1
     x=2,y=4  -> 4, set x=2 and y=4
-    false||true&&7 -> 7
+    1>2||2<10&&7 -> 7
 ]]
 
 ParserHelp.bug_text = [[You have triggered a BUG!
