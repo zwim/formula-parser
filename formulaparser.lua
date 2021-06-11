@@ -15,16 +15,21 @@ usage:
 
 local Parser = {}
 
-local Node = require("node")
 local ParserHelp = require("parserhelp")
 
 math.randomseed(os.time())
 
-function Parser.bug() return ParserHelp.bug_text end
+function Parser.bug()
+	return ParserHelp.bug_text
+end
 
-function Parser.help() return ParserHelp.help_text end
+function Parser.help()
+	return ParserHelp.help_text
+end
 
-function Parser.setVar(var, node) Parser.vars[var] = node end
+function Parser.setVar(var, node)
+	Parser.vars[var] = node
+end
 
 function Parser.getVar(var)
 	local ret = Parser.vars[var]
@@ -70,7 +75,7 @@ function Parser.storeVal(l, r)
 	local rval, err
 	rval, err = Parser:_eval(r)
 	if not rval or err then return nil, err or "Value expected" end
-	local ret = Node:new{val = rval}
+	local ret = {val = rval}
 	Parser.setVar(l, ret)
 	return rval
 end
@@ -83,7 +88,7 @@ function Parser.incVal(l, r)
 	rval, err = Parser:_eval(r)
 	if not rval or err then return nil, err or "Value expected" end
 	val = val + rval
-	local ret = Node:new{val = val}
+	local ret = {val = val}
 	Parser.setVar(l, ret)
 	return val
 end
@@ -96,7 +101,7 @@ function Parser.decVal(l, r)
 	rval, err = Parser:_eval(r)
 	if not rval or err then return nil, err or "Value expected" end
 	val = val - rval
-	local ret = Node:new{val = val}
+	local ret = {val = val}
 	Parser.setVar(l, ret)
 	return val
 end
@@ -109,7 +114,7 @@ function Parser.mulVal(l, r)
 	rval, err = Parser:_eval(r)
 	if not rval or err then return nil, err or "Value expected" end
 	val = val * rval
-	local ret = Node:new{val = val}
+	local ret = {val = val}
 	Parser.setVar(l, ret)
 	return val
 end
@@ -122,7 +127,7 @@ function Parser.divVal(l, r)
 	rval, err = Parser:_eval(r)
 	if not rval or err then return nil, err or "Value expected" end
 	val = val / rval
-	local ret = Node:new{val = val}
+	local ret = {val = val}
 	Parser.setVar(l, ret)
 	return val
 end
@@ -183,7 +188,19 @@ Parser.operators = { -- must be sorted by priority, least priority first
 	{"!", ParserHelp.factorial, 14, 0}
 }
 
-Parser.vars = {ans = Node:new{val = 42}} -- predefine one variable
+--[[ data structure used for a node
+local Node = {
+	left = nil,
+	mid = nil,
+	right = nil,
+	op = nil,
+	val = nil,
+	name = nil,
+	assoz = nil
+}
+]]
+
+Parser.vars = {ans = {val = 42}} -- predefine one variable
 
 function Parser:parse(str)
 	str = str:gsub("%/%*.*%*%/", "") -- remove comments
@@ -196,13 +213,13 @@ end
 
 function Parser:_parse(str)
 	if not str or str:len() == 0 then
-		return Node:new{}
+		return {}
 	end
 
 	-- do this first, heuristically, we have always numbers
 	local value = tonumber(str)
 	if value then
-		return Node:new{val = value}
+		return {val = value}
 	end
 
 	local i = 1
@@ -246,7 +263,7 @@ function Parser:_parse(str)
 				right_string = str:sub(opPos1 + operator_name:len())
 			end
 			right = Parser:_parse(right_string)
-			return Node:new{
+			return {
 				func = func,
 				assoz = assoz,
 				left = left,
@@ -283,7 +300,7 @@ function Parser:_parse(str)
 					end
 				end
 				if rBracket == str:len() then
-					return Node:new{
+					return {
 						func = self.functions[mid][2],
 						left = Parser:_parse(str:sub(lBracket + 1, rBracket - 1))
 					}
@@ -300,24 +317,24 @@ function Parser:_parse(str)
 	-- find value
 	--[[ -- whe have done the number check at the beginning (for speed reasons)
     if value then
-        return Node:new{
+        return {
             val = value,
         }
  ]]
 	if str == "e" then
-		return Node:new{val = math.e}
+		return {val = math.e}
 	elseif str == "pi" then
-		return Node:new{val = math.pi}
+		return {val = math.pi}
 	elseif str == "true" then
-		return Node:new{val = true}
+		return {val = true}
 	elseif str == "false" then
-		return Node:new{val = false}
+		return {val = false}
 	end
 
 	-- if we come here, it must be a variable
 	local _, var = str:gsub("^[%a_]", "")
 	if var ~= 0 then
-		return Node:new{name = str}
+		return {name = str}
 	else -- here we have e.g. 5x or 3(2+3) -> split it in 5*x or 3*(2+3)
 		local ins_pos = str:find("[%a_(]")
 		local alpha_num = ins_pos and
