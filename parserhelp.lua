@@ -104,7 +104,7 @@ Examples:
 
 ParserHelp.bug_text = [[You have triggered a BUG!
 Please report an issue on
-https://github.com/zwim/formula-parser
+https://github.com/zwim/formulaparser
 Please note the offending formula and the output of 'showvars()'.
 ]]
 
