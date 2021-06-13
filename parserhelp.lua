@@ -95,7 +95,7 @@ the angular functions can operate on degree, radiant and gon.
 Examples:
     3+4*5    -> 23
     ld(1024) -> 10
-    3>4      -> true
+    3<4      -> true
     4!=4     -> false
     x=3>4?1:-1 -> -1, set x=-1
     x=2,y=4  -> 4, set x=2 and y=4
