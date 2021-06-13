@@ -493,7 +493,8 @@ function Parser:_eval(node, err)
 
 	if node.name and not node.touch then -- variablename
 		node.touch = true
-		local ret, err = self:_eval(self.getVar(node.name))
+		local ret
+		ret, err = self:_eval(self.getVar(node.name))
 		node.touch = nil
 		return ret, err
 	elseif node.touch then
