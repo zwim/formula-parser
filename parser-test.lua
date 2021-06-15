@@ -379,6 +379,7 @@ for number = 0, passes do
     Parser:eval("x:=10")
     assert(Parser:eval("x*=5") == 50)
     assert(Parser:eval("x/=10") == 5)
+    assert(Parser:eval("x%=4") == 1)
 
     --  print("sequential")
     assert(Parser:eval("3,4") == 4)
