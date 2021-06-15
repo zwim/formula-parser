@@ -41,16 +41,16 @@ function Parser.getVar(var)
 end
 
 function Parser:showvars()
-	local ret = ""
+	local ret = {}
 	for name, content in pairs(Parser.vars) do
-		ret = ret .. name
 		if content.val then
-			ret = ret .. "=" .. content.val .. "\n"
+			table.insert(ret, name .. "=" .. content.val .. "\n")
 		else
-			ret = ret .. ":=" .. Parser:_eval(content) .. "\n"
+			table.insert(ret, name .. ":=" .. content.val .. "\n")
 		end
 	end
-	return ret, nil
+	table.sort(ret, function(a,b) return a:lower() < b:lower() end)
+	return table.concat(ret), nil
 end
 
 function Parser.kill(var)
@@ -132,6 +132,19 @@ function Parser.divVal(l, r)
 	return val
 end
 
+function Parser.modVal(l, r)
+	if l == nil or type(l) ~= "string" then return nil, "No variable" end
+	local val, rval, err
+	val, err = Parser:_eval(Parser.getVar(l))
+	if not val or err then return nil, err or "Value expected" end
+	rval, err = Parser:_eval(r)
+	if not rval or err then return nil, err or "Value expected" end
+	val = val % rval
+	local ret = {val = val}
+	Parser.setVar(l, ret)
+	return val
+end
+
 Parser.functions = { -- must be sorted alphabetically
 	{"(", ParserHelp.identity},
 	{"abs(", ParserHelp.abs},
@@ -168,11 +181,17 @@ Parser.operators = { -- must be sorted by priority, least priority first
 	{"-=", Parser.decVal, 1, 1},
 	{"*=", Parser.mulVal, 1, 1},
 	{"/=", Parser.divVal, 1, 1},
+	{"%=", Parser.modVal, 1, 1},
 	{"=", Parser.storeVal, 1, 1},
 	{"?:", ParserHelp.ternary, 2, -1},
 	{"||", ParserHelp.logOr, 3, 0},
 	{"&&", ParserHelp.logAnd, 4, 0},
-	{"!&", ParserHelp.logNand, 4, 0},
+	{"##", ParserHelp.logNand, 4, 0},
+	{"~~", ParserHelp.logXor, 4, 0},
+	{"|", ParserHelp.bitOr, 3, 0},
+	{"&", ParserHelp.bitAnd, 4, 0},
+	{"#", ParserHelp.bitNand, 4, 0},
+	{"~", ParserHelp.bitXor, 4, 0},
 	{"==", ParserHelp.eq, 8, 0},
 	{"!=", ParserHelp.ne, 8, 0},
 	{"<=", ParserHelp.le, 9, 0},
