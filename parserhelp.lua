@@ -175,7 +175,7 @@ function ParserHelp.cos(l)
 	elseif type(l) == "boolean" then
 		return nil, err_bool_arith
 	end
-	return math.cos(l * angle_convert)
+	return ParserHelp.sin(l + math.pi/2/angle_convert)
 end
 function ParserHelp.sin(l)
 	if l == nil then
@@ -183,7 +183,29 @@ function ParserHelp.sin(l)
 	elseif type(l) == "boolean" then
 		return nil, err_bool_arith
 	end
-	return math.sin(l * angle_convert)
+	--bring to unit circle
+	local sign
+	local angle = math.abs(l * angle_convert)
+	if l > 0 then
+		sign = 1
+		angle = l * angle_convert
+	else
+		sign = -1
+		angle = -l * angle_convert
+	end
+	angle = angle % (2*math.pi) --less error
+	if angle >= math.pi then -- bring to 1st or 2nd quadrant
+		sign = -sign
+		angle = angle - math.pi
+	end
+	if angle >= math.pi/2 then -- bring to 1st quadrand
+		angle = math.pi - angle
+	end
+	if angle > math.pi/4 then
+		return sign * math.cos(angle - math.pi/2)
+	else
+		return sign * math.sin(angle)
+	end
 end
 function ParserHelp.tan(l)
 	if l == nil then
@@ -191,7 +213,9 @@ function ParserHelp.tan(l)
 	elseif type(l) == "boolean" then
 		return nil, err_bool_arith
 	end
-	return math.tan(l * angle_convert)
+
+	local x,y = ParserHelp.sin(l), ParserHelp.cos(l)
+	return ParserHelp.sin(l) / ParserHelp.cos(l)
 end
 
 function ParserHelp.factorial(l, r)
