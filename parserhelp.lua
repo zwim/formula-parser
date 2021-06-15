@@ -219,7 +219,7 @@ function ParserHelp.log(l)
 	elseif l <= 0 then
 		return nil, err_domain
 	end
-	return math.log10(l) / math.log(math.e)
+	return math.log10(l)
 end
 
 function ParserHelp.add(l, r)
