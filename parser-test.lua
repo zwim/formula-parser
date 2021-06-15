@@ -28,7 +28,7 @@ assert(greek_alphabet_in_text == Parser:greek2text(greek_alphabet))
 assert(greek_alphabet == Parser:text2greek(greek_alphabet_in_text))
 
 ------------------------------
---local NAN = 0.0 / 0.0
+local NAN = 0.0 / 0.0
 local NINF = -math.huge
 local PINF = math.huge
 function math.finite(value)
@@ -193,12 +193,6 @@ end
 ---------------------------------
 
 
-
-
-
-
-
-
 for number = 0, passes do
 
     if number % 10 == 0 then print("Test run: " .. number) end
@@ -241,11 +235,15 @@ for number = 0, passes do
     assert(Parser:eval("2  && true") == true)
     assert(Parser:eval("2  && 7") == 7)
     assert(Parser:eval("false  && 7") == false)
-    assert(Parser:eval("false !& false") == true)
-    assert(Parser:eval("true  !& false") == true)
-    assert(Parser:eval("false !& true") == true)
-    assert(Parser:eval("true  !& true") == false)
-    assert(Parser:eval("true  !& true") == false)
+    assert(Parser:eval("false ## false") == true)
+    assert(Parser:eval("true  ## false") == true)
+    assert(Parser:eval("false ## true") == true)
+    assert(Parser:eval("true  ## true") == false)
+    assert(Parser:eval("true  ## true") == false)
+    assert(Parser:eval("##true") == false)
+    assert(Parser:eval("##false") == true)
+    assert(Parser:eval("##8") == false)
+    assert(Parser:eval("##0") == false)
     assert(Parser:eval("2>0") == true)
     assert(Parser:eval("5>5") == false)
     assert(Parser:eval("5>=5") == true)
@@ -262,6 +260,11 @@ for number = 0, passes do
     assert(Parser:eval("true!=false") == true)
     assert(Parser:eval("false!=true") == true)
     assert(Parser:eval("false!=false") == false)
+    assert(Parser:eval("7 | 8") == 15)
+    assert(Parser:eval("7 & 8") == 0)
+    assert(Parser:eval("7 # 8") == -1)
+    assert(Parser:eval("3 ~ 5") == 6)
+    assert(Parser:eval("#8") == -9)
 
     assert(Parser:eval("265/5/8") == 265 / 5 / 8)
 
@@ -294,7 +297,7 @@ for number = 0, passes do
     assert(Parser:eval("4<4 || 4==4") == true)
     assert(Parser:eval("4<4 && 4==4") == false)
     assert(Parser:eval("4<4 && 4>=4") == false)
-    assert(Parser:eval("4<4 !& 4>=4") == true)
+    assert(Parser:eval("4<4 ## 4>=4") == true)
 
     --  print("functions")
     assert(Parser:eval("abs(-4.5)") == 4.5)
@@ -528,7 +531,7 @@ for number = 0, passes do
 
     local operators = {"+", "-", "*", "/", "%", "^", "<", ">", "<=", ">=", "==", "!="}
     local operators_math = {"+", "-", "*", "/", "%", "^"}
-    local operators_logic = {"||", "&&", "!&"}
+    local operators_logic = {"||", "&&", "##"}
     local operators_comparison = {"<", ">", "<=", ">=", "==", "!="}
 
    for _, op1 in pairs(operators_math) do
@@ -554,6 +557,8 @@ for number = 0, passes do
             rep_optest(2, op1, op2, repetitions)
         end
     end
+
+    -- todo bitwise operator tests
 
     local functions = {
         "abs(", "acos(", "asin(", "atan(", "cos(", "exp(", "floor(", "kill(",

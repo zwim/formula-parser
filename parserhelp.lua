@@ -5,8 +5,6 @@
     Version: 0.9.0
 ]]
 
-math.e = math.exp(1)
-
 local angle_convert = 1 -- use 1 for RAD, pi/180 for Deg, pi/200 for Gon
 
 local err_bool_arith = "Arithmetics on boolean?"
@@ -15,6 +13,7 @@ local err_mixed_comp = "Mixed comparison!"
 local err_no_val = "Value expected!"
 local err_a_val = "No value allowed!"
 local err_domain = "Domain error!"
+local err_bitwise = "Bitoperations only on integer values!"
 
 local ParserHelp = {}
 
@@ -48,7 +47,12 @@ The following operators are supported with increasing priority:
     "?:" ternary like in C
     "&&" logical and, the lua way
     "||" logical or, the lua way
-    "!&" logical nand, the lua way
+    "##" logical nand, the lua way, -> logical not
+    "~~" logical nand, the lua way
+    "&"  bitwise and
+    "|"  bitwise or
+    "#"  bitwise nand -> bitwise not
+    "~"  bitwise nand
     "<="
     "=="
     ">="
@@ -107,6 +111,27 @@ Please report an issue on
 https://github.com/zwim/formulaparser
 Please note the offending formula and the output of 'showvars()'.
 ]]
+
+---------------------- additions to math ------------
+math.e = math.exp(1)
+function math.finite(value)
+    if not value then
+		return nil
+    elseif type(value) == "string" then
+        value = tonumber(value)
+        if value == nil then return nil end
+    elseif type(value) ~= "number" then
+        return nil
+	else
+		local value_str = tostring(value)
+		if value_str:find("inf") or value_str:find("nan") then
+			return nil
+		end
+	end
+    return true
+end
+-----------------------------------------------------
+
 
 function ParserHelp.abs(l)
 	if l == nil then
@@ -368,6 +393,30 @@ function ParserHelp.ternary(l, m, r)
 	end
 end
 
+function ParserHelp.bitOr(l, r)
+	if l == nil or r == nil then return nil, err_no_val end
+	if math.floor(l) ~= l or math.floor(r) ~= r then return nil, err_bitwise end
+	return bit.bor(l, r)
+end
+function ParserHelp.bitAnd(l, r)
+	if l == nil or r == nil then return nil, err_no_val end
+	if math.floor(l) ~= l or math.floor(r) ~= r then return nil, err_bitwise end
+	return bit.band(l, r)
+end
+function ParserHelp.bitNand(l, r)
+	if l == nil and r == nil then return nil, err_no_val end
+	if l == nil and math.floor(r) == r then
+		return bit.bnot(r)
+	end
+	if math.floor(l) ~= l or math.floor(r) ~= r then return nil, err_bitwise end
+	return bit.bnot(bit.band(l, r))
+end
+function ParserHelp.bitXor(l, r)
+	if l == nil or r == nil then return nil, err_no_val end
+	if math.floor(l) ~= l or math.floor(r) ~= r then return nil, err_bitwise end
+	return bit.bxor(l, r)
+end
+
 function ParserHelp.logOr(l, r)
 	if l == nil or r == nil then return nil, err_no_val end
 	return l or r
@@ -377,8 +426,13 @@ function ParserHelp.logAnd(l, r)
 	return l and r
 end
 function ParserHelp.logNand(l, r)
-	if l == nil or r == nil then return nil, err_no_val end
+	if l == nil and r == nil then return nil, err_no_val end
+	if l == nil then  return not r end
 	return not (l and r)
+end
+function ParserHelp.logXor(l, r)
+	if l == nil or r == nil then return nil, err_no_val end
+	return l ~= r
 end
 
 function ParserHelp.lt(l, r)
