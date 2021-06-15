@@ -42,12 +42,19 @@ end
 
 function Parser:showvars()
 	local ret = {}
+	local var_str
 	for name, content in pairs(Parser.vars) do
 		if content.val then
-			table.insert(ret, name .. "=" .. content.val .. "\n")
+			var_str = name .. "=" .. content.val
 		else
-			table.insert(ret, name .. ":=" .. content.val .. "\n")
+			var_str = name .. ":=" .. Parser:eval(content)
 		end
+		if content.comment then
+			var_str = var_str .. " " ..content.comment .. "\n"
+		else
+			var_str = var_str .. "\n"
+		end
+		table.insert(ret, var_str)
 	end
 	table.sort(ret, function(a,b) return a:lower() < b:lower() end)
 	return table.concat(ret), nil
@@ -64,18 +71,19 @@ function Parser.kill(var)
 	return false
 end
 
-function Parser.storeTree(l, r)
+function Parser.storeTree(l, r, comment)
 	if l == nil or r == nil then return nil, "Nothing to store" end
+	r.comment = comment
 	Parser.setVar(l, r)
 	return Parser:_eval(r)
 end
 
-function Parser.storeVal(l, r)
+function Parser.storeVal(l, r, comment)
 	if l == nil or type(l) ~= "string" then return nil, "No variable" end
 	local rval, err
 	rval, err = Parser:_eval(r)
 	if not rval or err then return nil, err or "Value expected" end
-	local ret = {val = rval}
+	local ret = {val = rval, comment = comment}
 	Parser.setVar(l, ret)
 	return rval
 end
@@ -215,19 +223,29 @@ local Node = {
 	op = nil,
 	val = nil,
 	name = nil,
-	assoz = nil
+	assoz = nil,
+	comment = nil,
 }
 ]]
 
 Parser.vars = {ans = {val = 42}} -- predefine one variable
 
 function Parser:parse(str)
+	local pos = str:find("%/%*.*%*%/")
+	local comment
+	if pos then
+		comment = str:sub(pos)
+	end
 	str = str:gsub("%/%*.*%*%/", "") -- remove comments
 	str = str:gsub("%s+", "") -- remove whitespaces
 	str = str:gsub("‒", "-") -- replace emdash with minus
 	str = str:gsub("π", "pi") -- replace emdash with minus
 	str = str:gsub("√", "sqrt") -- replace emdash with minus
-	return self:_parse(str)
+	local ret = self:_parse(str)
+	if ret then
+		ret.comment = comment
+	end
+	return ret
 end
 
 function Parser:_parse(str)
@@ -484,7 +502,7 @@ function Parser:_eval(node, err)
 	if node.func then
 		if node.assoz == 1 or node.func == Parser.kill then -- if right-left assoziative
 			if node.left then
-				return node.func(node.left.name, node.right)
+				return node.func(node.left.name, node.right, node.comment)
 			else
 				return nil, "wrong variable"
 			end
