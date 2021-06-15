@@ -6,14 +6,21 @@
 ]]
 
 -- number of passes
-local passes = 20 -- set this for benchmark
-local repetitions = 16 -- how thorogh the test is
+local passes = 32 -- set this for benchmark
+local repetitions = 32 -- how thorogh the test is
 math.randomseed(os.clock())
 
--- local Parser = require("formulaparser")
 local Parser = require("formulaparser")
+local ParserHelp = require("parserhelp")
 
 print("This is a test for formulaparser.lua")
+
+local test_counter = 0
+local function Assert(a, b)
+    test_counter = test_counter + 1
+    assert(a, b, " " .. tostring(a) .. "    " .. tostring(b))
+end
+
 
 print("Help")
 print(tostring(Parser:eval("help()")))
@@ -22,10 +29,10 @@ local greek_alphabet = "α β γ δ ε ζ η ϑ ι ϰ λ μ ν ξ π ρ σ τ φ
 local greek_alphabet_in_text = "alpha beta gamma delta epsilon zeta eta thita iota kappa lambda my ny xi pi rho sigma tau phi chi psi omega Sigma"
 
 print("THE ANSWER: " .. Parser:eval("ans") .. "\n")
-assert(Parser:eval("ans") == 42)
+Assert(Parser:eval("ans") == 42)
 
-assert(greek_alphabet_in_text == Parser:greek2text(greek_alphabet))
-assert(greek_alphabet == Parser:text2greek(greek_alphabet_in_text))
+Assert(greek_alphabet_in_text == Parser:greek2text(greek_alphabet))
+Assert(greek_alphabet == Parser:text2greek(greek_alphabet_in_text))
 
 ------------------------------
 local NAN = 0.0 / 0.0
@@ -89,7 +96,7 @@ local function genVal(numer)
     return "0", "0"
 end
 
-local function my_assert(a, b)
+local function my_Assert(a, b)
     local expected, result, err
     local lua_fun = loadstring("function() return " .. b .. " end")
     --      print(a)
@@ -97,13 +104,13 @@ local function my_assert(a, b)
     result, err = Parser:eval(a)
     if math.finite(expected) and math.finite(result) then
         if type(result) == "number" and type(expected) == "number" then
-            assert(math.abs(result - expected) /
-                       ((expected == 0) and 1 or expected) < 1e-12,
+            Assert(math.abs(result - expected) /
+                       ((expected == 0) and 1 or expected) < 1e-15,
                    string.format("%s  err:%s   %.20f==%.20f diff=%E\n", a,
                                  tostring(err), result, expected,
                                  result - expected))
         elseif result == nil and expected == nil then
-            assert(result == expected,
+            Assert(result == expected,
                    string.format("%s  err:%s   %s==%s\n", a, tostring(err),
                                  tostring(result), tostring(expected)))
         else
@@ -153,7 +160,7 @@ local function optest(values, op1, op2)
         b = "(" .. b .. ")"
     end
 
-   my_assert(a, b)
+   my_Assert(a, b)
 end
 
 local function rep_optest(a, b, c, d)
@@ -183,351 +190,358 @@ local function functest1(values, op, func)
     -- e.g. 3*sin(5)
     aa=        a .. op .. func .. x .. ")"
     bb = "" .. b .. op .. func .. y .. ")"
-    my_assert(aa, bb)
+    my_Assert(aa, bb)
 
     -- e.g. 3*sin(5)
     aa =       func .. a .. op .. x .. ")"
     bb = "" .. func .. b .. op .. y .. ")"
-    my_assert(aa, bb)
+    my_Assert(aa, bb)
 end
 ---------------------------------
-
 
 for number = 0, passes do
 
     if number % 10 == 0 then print("Test run: " .. number) end
 
     --  print("numbers")
-    assert(Parser:eval("0") == 0)
-    assert(Parser:eval("pi") == math.pi)
-    assert(Parser:eval("exp(1)") == math.exp(1))
+    Assert(Parser:eval("0") == 0)
+    Assert(Parser:eval("pi") == math.pi)
+    Assert(Parser:eval("exp(1)") == math.exp(1))
 
-    assert(Parser:eval("123") == 123)
-    assert(Parser:eval("-123") == -123)
-    assert(Parser:eval("1E12") == 1e12)
-    assert(Parser:eval("-12E34") == -12e34)
-    assert(Parser:eval("1E-12") == 1e-12)
-    assert(Parser:eval("-1E-12") == -1e-12)
+    Assert(Parser:eval("123") == 123)
+    Assert(Parser:eval("-123") == -123)
+    Assert(Parser:eval("1E12") == 1e12)
+    Assert(Parser:eval("-12E34") == -12e34)
+    Assert(Parser:eval("1E-12") == 1e-12)
+    Assert(Parser:eval("-1E-12") == -1e-12)
 
     --  print("operators")
-    assert(Parser:eval("1+2") == 1 + 2)
-    assert(Parser:eval("1-2") == 1 - 2)
-    assert(Parser:eval("3*2") == 3 * 2)
-    assert(Parser:eval("3/2") == 3 / 2)
-    assert(Parser:eval("7%2") == 7 % 2)
-    assert(Parser:eval("3^2") == 3 ^ 2)
-    assert(Parser:eval("5!") == 120)
-    assert(Parser:eval("e^5") == math.exp(1) ^ 5)
-    assert(Parser:eval("3*pi") == 3 * math.pi)
-    assert(Parser:eval("3pi") == 3 * math.pi)
-    assert(Parser:eval("-4pi") == -4 * math.pi)
-    assert(Parser:eval("false || false") == false)
-    assert(Parser:eval("true  || false") == true)
-    assert(Parser:eval("false || true") == true)
-    assert(Parser:eval("true  || true") == true)
-    assert(Parser:eval("3 || false") == 3)
-    assert(Parser:eval("3 || 7") == 3)
-    assert(Parser:eval("false || 7") == 7)
-    assert(Parser:eval("false && false") == false)
-    assert(Parser:eval("true  && false") == false)
-    assert(Parser:eval("false && true") == false)
-    assert(Parser:eval("true  && true") == true)
-    assert(Parser:eval("2  && true") == true)
-    assert(Parser:eval("2  && 7") == 7)
-    assert(Parser:eval("false  && 7") == false)
-    assert(Parser:eval("false ## false") == true)
-    assert(Parser:eval("true  ## false") == true)
-    assert(Parser:eval("false ## true") == true)
-    assert(Parser:eval("true  ## true") == false)
-    assert(Parser:eval("true  ## true") == false)
-    assert(Parser:eval("##true") == false)
-    assert(Parser:eval("##false") == true)
-    assert(Parser:eval("##8") == false)
-    assert(Parser:eval("##0") == false)
-    assert(Parser:eval("2>0") == true)
-    assert(Parser:eval("5>5") == false)
-    assert(Parser:eval("5>=5") == true)
-    assert(Parser:eval("5==5") == true)
-    assert(Parser:eval("true==true") == true)
-    assert(Parser:eval("true==false") == false)
-    assert(Parser:eval("false==true") == false)
-    assert(Parser:eval("false==false") == true)
-    assert(Parser:eval("4<10") == true)
-    assert(Parser:eval("4<=10") == true)
-    assert(Parser:eval("4<=1") == false)
-    assert(Parser:eval("5!=5") == false)
-    assert(Parser:eval("true!=true") == false)
-    assert(Parser:eval("true!=false") == true)
-    assert(Parser:eval("false!=true") == true)
-    assert(Parser:eval("false!=false") == false)
-    assert(Parser:eval("7 | 8") == 15)
-    assert(Parser:eval("7 & 8") == 0)
-    assert(Parser:eval("7 # 8") == -1)
-    assert(Parser:eval("3 ~ 5") == 6)
-    assert(Parser:eval("#8") == -9)
+    Assert(Parser:eval("1+2") == 1 + 2)
+    Assert(Parser:eval("1-2") == 1 - 2)
+    Assert(Parser:eval("3*2") == 3 * 2)
+    Assert(Parser:eval("3/2") == 3 / 2)
+    Assert(Parser:eval("7%2") == 7 % 2)
+    Assert(Parser:eval("3^2") == 3 ^ 2)
+    Assert(Parser:eval("5!") == 120)
+    Assert(Parser:eval("e^5") == math.exp(1) ^ 5)
+    Assert(Parser:eval("3*pi") == 3 * math.pi)
+    Assert(Parser:eval("3pi") == 3 * math.pi)
+    Assert(Parser:eval("-4pi") == -4 * math.pi)
+    Assert(Parser:eval("false || false") == false)
+    Assert(Parser:eval("true  || false") == true)
+    Assert(Parser:eval("false || true") == true)
+    Assert(Parser:eval("true  || true") == true)
+    Assert(Parser:eval("3 || false") == 3)
+    Assert(Parser:eval("3 || 7") == 3)
+    Assert(Parser:eval("false || 7") == 7)
+    Assert(Parser:eval("false && false") == false)
+    Assert(Parser:eval("true  && false") == false)
+    Assert(Parser:eval("false && true") == false)
+    Assert(Parser:eval("true  && true") == true)
+    Assert(Parser:eval("2  && true") == true)
+    Assert(Parser:eval("2  && 7") == 7)
+    Assert(Parser:eval("false  && 7") == false)
+    Assert(Parser:eval("false ## false") == true)
+    Assert(Parser:eval("true  ## false") == true)
+    Assert(Parser:eval("false ## true") == true)
+    Assert(Parser:eval("true  ## true") == false)
+    Assert(Parser:eval("true  ## true") == false)
+    Assert(Parser:eval("##true") == false)
+    Assert(Parser:eval("##false") == true)
+    Assert(Parser:eval("##8") == false)
+    Assert(Parser:eval("##0") == false)
+    Assert(Parser:eval("2>0") == true)
+    Assert(Parser:eval("5>5") == false)
+    Assert(Parser:eval("5>=5") == true)
+    Assert(Parser:eval("5==5") == true)
+    Assert(Parser:eval("true==true") == true)
+    Assert(Parser:eval("true==false") == false)
+    Assert(Parser:eval("false==true") == false)
+    Assert(Parser:eval("false==false") == true)
+    Assert(Parser:eval("4<10") == true)
+    Assert(Parser:eval("4<=10") == true)
+    Assert(Parser:eval("4<=1") == false)
+    Assert(Parser:eval("5!=5") == false)
+    Assert(Parser:eval("true!=true") == false)
+    Assert(Parser:eval("true!=false") == true)
+    Assert(Parser:eval("false!=true") == true)
+    Assert(Parser:eval("false!=false") == false)
+    Assert(Parser:eval("7 | 8") == 15)
+    Assert(Parser:eval("7 & 8") == 0)
+    Assert(Parser:eval("7 # 8") == -1)
+    Assert(Parser:eval("3 ~ 5") == 6)
+    Assert(Parser:eval("#8") == -9)
 
-    assert(Parser:eval("265/5/8") == 265 / 5 / 8)
+    Assert(Parser:eval("265/5/8") == 265 / 5 / 8)
 
-    assert(Parser:eval("2^1^3") == (2 ^ 1) ^ 3)
-    assert(Parser:eval("2/3*5") == 2 / 3 * 5)
+    Assert(Parser:eval("2^1^3") == (2 ^ 1) ^ 3)
+    Assert(Parser:eval("2/3*5") == 2 / 3 * 5)
 
-    assert(Parser:eval("123+4*6") == 123 + 4 * 6)
-    assert(Parser:eval("4*6+123") == 4 * 6 + 123)
+    Assert(Parser:eval("123+4*6") == 123 + 4 * 6)
+    Assert(Parser:eval("4*6+123") == 4 * 6 + 123)
 
-    assert(Parser:eval("(3*8)-7") == (3 * 8) - 7)
-    assert(Parser:eval("3*(8-7)") == 3 * (8 - 7))
-    assert(Parser:eval("(8-7)*3") == (8 - 7) * 3)
-    assert(Parser:eval("-(-8-7)*3") == -(-8 - 7) * 3)
-    assert(Parser:eval("-(-8-7)*(3)") == -(-8 - 7) * (3))
-    assert(Parser:eval("(8-7)*pi") == (8 - 7) * math.pi)
+    Assert(Parser:eval("(3*8)-7") == (3 * 8) - 7)
+    Assert(Parser:eval("3*(8-7)") == 3 * (8 - 7))
+    Assert(Parser:eval("(8-7)*3") == (8 - 7) * 3)
+    Assert(Parser:eval("-(-8-7)*3") == -(-8 - 7) * 3)
+    Assert(Parser:eval("-(-8-7)*(3)") == -(-8 - 7) * (3))
+    Assert(Parser:eval("(8-7)*pi") == (8 - 7) * math.pi)
 
-    assert(Parser:eval("(8e5-7)*3e-4") == (8e5 - 7) * 3e-4)
-    assert(Parser:eval("(8+e-7)*3") == (8 + math.exp(1) - 7) * 3)
-    assert(Parser:eval("(-8e5-7)%3e-4") == (-8e5 - 7) % 3e-4)
+    Assert(Parser:eval("(8e5-7)*3e-4") == (8e5 - 7) * 3e-4)
+    Assert(Parser:eval("(8+e-7)*3") == (8 + math.exp(1) - 7) * 3)
+    Assert(Parser:eval("(-8e5-7)%3e-4") == (-8e5 - 7) % 3e-4)
 
-    assert(Parser:eval("3!+4") == 10)
-    assert(Parser:eval("-e*2") == -math.exp(1) * 2)
+    Assert(Parser:eval("3!+4") == 10)
+    Assert(Parser:eval("-e*2") == -math.exp(1) * 2)
 
-    assert(Parser:eval("4 || false || 5") == 4)
-    assert(Parser:eval("4 && 1 && 5") == 5)
+    Assert(Parser:eval("4 || false || 5") == 4)
+    Assert(Parser:eval("4 && 1 && 5") == 5)
 
-    assert(Parser:eval("(-pi)&&(+pi)") == math.pi)
-    assert(Parser:eval("-pi<=e") == true)
+    Assert(Parser:eval("(-pi)&&(+pi)") == math.pi)
+    Assert(Parser:eval("-pi<=e") == true)
 
-    assert(Parser:eval("4<4 || 4==4") == true)
-    assert(Parser:eval("4<4 && 4==4") == false)
-    assert(Parser:eval("4<4 && 4>=4") == false)
-    assert(Parser:eval("4<4 ## 4>=4") == true)
+    Assert(Parser:eval("4<4 || 4==4") == true)
+    Assert(Parser:eval("4<4 && 4==4") == false)
+    Assert(Parser:eval("4<4 && 4>=4") == false)
+    Assert(Parser:eval("4<4 ## 4>=4") == true)
 
     --  print("functions")
-    assert(Parser:eval("abs(-4.5)") == 4.5)
-    assert(Parser:eval("floor(5.9)") == 5)
-    assert(Parser:eval("round(5.9)") == 6)
-    assert(Parser:eval("sqrt(100)") == 10)
-    assert(Parser:eval("√(100)") == 10)
-    assert(Parser:eval("ld(1024)") == 10)
-    assert(Parser:eval("ln(e)") == 1)
-    assert(Parser:eval("log(0.001)") == -3)
+    Assert(Parser:eval("abs(-4.5)") == 4.5)
+    Assert(Parser:eval("floor(5.9)") == 5)
+    Assert(Parser:eval("round(5.9)") == 6)
+    Assert(Parser:eval("sqrt(100)") == 10)
+    Assert(Parser:eval("√(100)") == 10)
+    Assert(Parser:eval("ld(1024)") == 10)
+    Assert(Parser:eval("ln(e)") == 1)
+    Assert(Parser:eval("log(0.001)") == -3)
 
     --  print("angle func")
     Parser:eval("setrad()")
 
-    assert(Parser:eval("sin(3*pi)") == math.sin(3 * math.pi))
-    my_assert("asin(0.3)","math.asin(0.3)")
-    assert(Parser:eval("cos(0.3)") == math.cos(0.3))
-    assert(Parser:eval("acos(0.3)") == math.acos(0.3))
-    assert(Parser:eval("tan(0.3)") == math.tan(0.3))
-    assert(Parser:eval("atan(0.3)") == math.atan(0.3))
+    Assert(Parser:eval("sin(3*pi)") == 0)
+    my_Assert("asin(0.3)", "math.asin(0.3)")
+    Assert(Parser:eval("cos(0.3)") == math.cos(0.3))
+    Assert(Parser:eval("acos(0.3)") == math.acos(0.3))
+    my_Assert("tan(0.3)", "math.tan(0.3)")
+    Assert(Parser:eval("tan(3*pi)") == 0)
+    my_Assert("atan(0.3)", "math.atan(0.3)")
 
-    assert(Parser:eval("asin(sin(3*pi))") == math.asin(math.sin(3 * math.pi)))
-    assert(Parser:eval("acos(cos(3*pi))") == math.acos(math.cos(3 * math.pi)))
-    assert(Parser:eval("atan(tan(3*pi))") == math.atan(math.tan(3 * math.pi)))
+    Assert(Parser:eval("asin(sin(3*pi))") == 0)
+    Assert(Parser:eval("acos(cos(3*pi))") == math.pi)
+    Assert(Parser:eval("atan(tan(3*pi))") == 0)
+    Assert(Parser:eval("asin(sin(pi/2))") == math.pi/2)
 
     Parser:eval("setdeg()")
-    assert(Parser:eval("sin(90)") == 1)
-    assert(Parser:eval("sin(90)") == math.sin(90 * math.pi / 180))
-    assert(Parser:eval("asin(1)") == 90)
-    assert(Parser:eval("cos(180)") == -1)
-    assert(Parser:eval("acos(0)") == 90)
-    assert(Parser:eval("acos(-1)") == 180)
-    assert(Parser:eval("tan(45)") == math.tan(math.pi / 4))
-    assert(Parser:eval("atan(1)") == 45)
-    assert(Parser:eval("atan(0.3)") == math.atan(0.3) / math.pi * 180)
+    Assert(Parser:eval("sin(0)") == 0)
+    Assert(Parser:eval("sin(90)") == 1)
+    Assert(Parser:eval("sin(180)") == 0)
+    Assert(Parser:eval("sin(270)") == -1)
+    Assert(Parser:eval("sin(90)") == math.sin(90 * math.pi / 180))
+    Assert(Parser:eval("asin(1)") == 90)
+    Assert(Parser:eval("cos(0)") == 1)
+    Assert(Parser:eval("cos(90)") == 0)
+    Assert(Parser:eval("cos(180)") == -1)
+    Assert(Parser:eval("cos(270)") == 0)
+    Assert(Parser:eval("acos(0)") == 90)
+    Assert(Parser:eval("acos(-1)") == 180)
+    my_Assert("tan(45)", "math.tan(math.pi / 4)")
+    Assert(Parser:eval("atan(1)") == 45)
+    Assert(Parser:eval("atan(0.3)") == math.atan(0.3) / math.pi * 180)
 
-    my_assert("asin(sin(45))", "math.asin(math.sin(math.pi / 4)) * 180 / math.pi")
-    assert(Parser:eval("acos(cos(0))") == math.acos(math.cos(0)))
-    assert(Parser:eval("atan(tan(0.1))") == math.atan(math.tan(0.1)))
+    my_Assert("asin(sin(45))", "math.asin(math.sin(math.pi / 4)) * 180 / math.pi")
+    Assert(Parser:eval("acos(cos(0))") == math.acos(math.cos(0)))
+    my_Assert("atan(tan(0.1))", "math.atan(math.tan(0.1))")
 
     --  print("other random test")
-    assert(Parser:eval("abs(-5)*abs(6)+77") == math.abs(-5) * math.abs(6) + 77)
+    Assert(Parser:eval("abs(-5)*abs(6)+77") == math.abs(-5) * math.abs(6) + 77)
 
-    assert(Parser:eval("floor(23.3*4.7)-2") == math.floor(23.3 * 4.7) - 2)
-    assert(Parser:eval("round(23.3*4.7)") == math.floor(23.3 * 4.7 + 0.5))
+    Assert(Parser:eval("floor(23.3*4.7)-2") == math.floor(23.3 * 4.7) - 2)
+    Assert(Parser:eval("round(23.3*4.7)") == math.floor(23.3 * 4.7 + 0.5))
 
     Parser:eval("randseed(1)")
-    assert(Parser:eval("rnd(12)") <= 12)
+    Assert(Parser:eval("rnd(12)") <= 12)
 
-    assert(Parser:eval("log(1e-4)") == -4)
+    Assert(Parser:eval("log(1e-4)") == -4)
 
     --  print("store tests")
 
-    assert(Parser:eval("x=1+2") == 3)
-    assert(Parser:eval("x") == 3)
+    Assert(Parser:eval("x=1+2") == 3)
+    Assert(Parser:eval("x") == 3)
 
     Parser:eval("x=1+2")
-    assert(Parser:eval("x=20+x") == 23)
-    assert(Parser:eval("x") == 23)
+    Assert(Parser:eval("x=20+x") == 23)
+    Assert(Parser:eval("x") == 23)
 
     Parser:eval("test=" .. number)
-    assert(Parser:eval("20+test") == 20 + number)
+    Assert(Parser:eval("20+test") == 20 + number)
 
     Parser:eval("x=y=12")
-    assert(Parser:eval("x") == 12)
-    assert(Parser:eval("y") == 12)
+    Assert(Parser:eval("x") == 12)
+    Assert(Parser:eval("y") == 12)
 
     Parser:eval("x=3+(y=-3)")
-    assert(Parser:eval("y") == -3)
-    assert(Parser:eval("x") == 3 - 3)
+    Assert(Parser:eval("y") == -3)
+    Assert(Parser:eval("x") == 3 - 3)
 
-    assert(Parser:eval("kill(x)") == true)
-    assert(Parser:eval("kill()") == true)
-    assert(Parser:eval("kill(y)") == false)
+    Assert(Parser:eval("kill(x)") == true)
+    Assert(Parser:eval("kill()") == true)
+    Assert(Parser:eval("kill(y)") == false)
 
     Parser:eval("kill(x)")
     Parser:eval("x:=1+2")
-    assert(Parser:eval("y:=20+x") == 23)
+    Assert(Parser:eval("y:=20+x") == 23)
 
-    assert(Parser:eval("x+=5+5") == 13)
-    assert(Parser:eval("x-=20") == 13 - 20)
+    Assert(Parser:eval("x+=5+5") == 13)
+    Assert(Parser:eval("x-=20") == 13 - 20)
     Parser:eval("x:=10")
-    assert(Parser:eval("x*=5") == 50)
-    assert(Parser:eval("x/=10") == 5)
-    assert(Parser:eval("x%=4") == 1)
+    Assert(Parser:eval("x*=5") == 50)
+    Assert(Parser:eval("x/=10") == 5)
+    Assert(Parser:eval("x%=4") == 1)
 
     --  print("sequential")
-    assert(Parser:eval("3,4") == 4)
-    assert(Parser:eval("1*2,3*5") == 15)
-    assert(Parser:eval("(1+2),(3*5)") == 15)
-    assert(Parser:eval("x=3,y=-12") == -12)
-    assert(Parser:eval("x") == 3)
-    assert(Parser:eval("y") == -12)
+    Assert(Parser:eval("3,4") == 4)
+    Assert(Parser:eval("1*2,3*5") == 15)
+    Assert(Parser:eval("(1+2),(3*5)") == 15)
+    Assert(Parser:eval("x=3,y=-12") == -12)
+    Assert(Parser:eval("x") == 3)
+    Assert(Parser:eval("y") == -12)
 
     --  print("ternary op")
-    assert(Parser:eval("true?5:-5") == 5, Parser:eval("true?5:-5"))
-    assert(Parser:eval("false?5:-5") == -5)
+    Assert(Parser:eval("true?5:-5") == 5, Parser:eval("true?5:-5"))
+    Assert(Parser:eval("false?5:-5") == -5)
 
-    assert(Parser:eval("3<3?5:-5") == -5)
+    Assert(Parser:eval("3<3?5:-5") == -5)
 
-    assert(Parser:eval("x=3") == 3)
-    assert(Parser:eval("x?pi:e") == math.pi)
-    assert(Parser:eval("x-=3") == 0)
-    assert(Parser:eval("x!=0?pi:e") == math.exp(1))
+    Assert(Parser:eval("x=3") == 3)
+    Assert(Parser:eval("x?pi:e") == math.pi)
+    Assert(Parser:eval("x-=3") == 0)
+    Assert(Parser:eval("x!=0?pi:e") == math.exp(1))
 
-    assert(Parser:eval("2>0?2:-2") == 2)
-    assert(Parser:eval("2<0?2:-2") == -2)
+    Assert(Parser:eval("2>0?2:-2") == 2)
+    Assert(Parser:eval("2<0?2:-2") == -2)
 
-    assert(Parser:eval("x=3") == 3)
-    assert(Parser:eval("x>0?x:-x") == 3)
-    assert(Parser:eval("x<=0?x:-x") == -3)
+    Assert(Parser:eval("x=3") == 3)
+    Assert(Parser:eval("x>0?x:-x") == 3)
+    Assert(Parser:eval("x<=0?x:-x") == -3)
 
-    assert(Parser:eval("2>4?3:4") == 4)
+    Assert(Parser:eval("2>4?3:4") == 4)
 
     Parser:eval("x=10")
-    assert(Parser:eval("x=x==0?pi:e") == math.exp(1))
-    assert(Parser:eval("x") == math.exp(1))
+    Assert(Parser:eval("x=x==0?pi:e") == math.exp(1))
+    Assert(Parser:eval("x") == math.exp(1))
 
-    assert(Parser:eval("2ld(1024)") == 20)
-    assert(Parser:eval("2pi") == 2 * math.pi)
-    assert(Parser:eval("2(pi)") == 2 * math.pi)
+    Assert(Parser:eval("2ld(1024)") == 20)
+    Assert(Parser:eval("2pi") == 2 * math.pi)
+    Assert(Parser:eval("2(pi)") == 2 * math.pi)
 
-    assert(Parser:eval("kill()") == true)
+    Assert(Parser:eval("kill()") == true)
 
     --  print("check for wrong input")
     local val, err
 
     val, err = Parser:eval("")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("z")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("3-")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
     val, err = Parser:eval("*4)")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
     val, err = Parser:eval("2*)")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("2+3)")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("(3*2")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("3*")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("*pi")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("sin(x")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("3!*+4")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("3*(4-)")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("3*(4))")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("3*(4+(8)))")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("1*sin(4+(8)")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("3**4)")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("()")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("true==3")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("true>true")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
     val, err = Parser:eval("true>false")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
     val, err = Parser:eval("false>true")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
     val, err = Parser:eval("false>false")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("true<3")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
     val, err = Parser:eval("true>=3")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
     val, err = Parser:eval("-4>false")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
-    assert(Parser:eval("x=-1E+3") == -1000)
+    Assert(Parser:eval("x=-1E+3") == -1000)
     val, err = Parser:eval("x=")
-    assert(val == nil or err ~= nil)
-    assert(Parser:eval("x") == -1000)
+    Assert(val == nil or err ~= nil)
+    Assert(Parser:eval("x") == -1000)
 
     val, err = Parser:eval("x+=")
-    assert(val == nil or err ~= nil)
-    assert(Parser:eval("x") == -1000)
+    Assert(val == nil or err ~= nil)
+    Assert(Parser:eval("x") == -1000)
 
     val, err = Parser:eval("x-=")
-    assert(val == nil or err ~= nil)
-    assert(Parser:eval("x") == -1000)
+    Assert(val == nil or err ~= nil)
+    Assert(Parser:eval("x") == -1000)
 
     val, err = Parser:eval("x*=")
-    assert(val == nil or err ~= nil)
-    assert(Parser:eval("x") == -1000)
+    Assert(val == nil or err ~= nil)
+    Assert(Parser:eval("x") == -1000)
 
     val, err = Parser:eval("x/=")
-    assert(val == nil or err ~= nil)
-    assert(Parser:eval("x") == -1000)
+    Assert(val == nil or err ~= nil)
+    Assert(Parser:eval("x") == -1000)
 
     val, err = Parser:eval("pi=4")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("e+=4")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("1-=4")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("e*=4")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     val, err = Parser:eval("(1+2)/=4")
-    assert(val == nil or err ~= nil)
+    Assert(val == nil or err ~= nil)
 
     local operators = {"+", "-", "*", "/", "%", "^", "<", ">", "<=", ">=", "==", "!="}
     local operators_math = {"+", "-", "*", "/", "%", "^"}
@@ -576,4 +590,104 @@ for number = 0, passes do
 
 end
 
-print("\nAll tests passed\n")
+print("\nAll parser tests passed\n" .. test_counter .. " individual tests done\n")
+
+local max_error
+local error_angle
+test_counter = 0
+
+print("Trigonometry test ...")
+ParserHelp.setAngleDeg()
+
+Assert(ParserHelp.sin(3) ~= math.sin(3))
+
+max_error = 0
+error_angle = 0
+for i = -4*360,4*360,1 do
+	local err = math.abs(ParserHelp.sin(i) - math.sin(math.rad(i)))
+    Assert(max_error < 1e-15)
+	if err > max_error then
+		max_error = err
+		error_angle = i
+	end
+end
+Assert(max_error < 1e-15)
+
+max_error = 0
+error_angle = 0
+for i = -4*360,4*360,1 do
+	local err = math.abs(ParserHelp.cos(i) - math.cos(math.rad(i)))
+    Assert(max_error < 1e-14, max_error)
+	if err > max_error then
+		max_error = err
+		error_angle = i
+	end
+end
+Assert(max_error < 1e-14, max_error)
+
+max_error = 0
+error_angle = 0
+for i = -4*360,4*360,1 do
+	local err = math.abs(ParserHelp.cos(i) - math.cos(math.rad(i)))
+Assert(max_error < 1e-14, max_error)
+	if err > max_error then
+		max_error = err
+		error_angle = i
+	end
+end
+Assert(max_error < 1e-14, max_error)
+
+max_error = 0
+error_angle = 0
+for i = -360,360,5 do
+	local err = math.abs(ParserHelp.tan(i) - math.tan(math.rad(i)))/math.tan(math.rad(i))
+    Assert(max_error < 1e-14, tostring(max_error) .. " " .. error_angle)
+	if i%90 ~= 0 then
+		if err > max_error then
+			max_error = err
+			error_angle = i
+		end
+	end
+end
+Assert(max_error < 1e-14, tostring(max_error) .. " " .. error_angle)
+
+
+ParserHelp.setAngleRad()
+
+max_error = 0
+error_angle = 0
+for i = -4*math.pi,4*math.pi,0.01 do
+	local err = math.abs(ParserHelp.sin(i) - math.sin(i))
+    Assert(max_error < 1e-14, max_error)
+	if err > max_error then
+		max_error = err
+		error_angle = i
+	end
+end
+Assert(max_error < 1e-14, max_error)
+
+max_error = 0
+error_angle = 0
+for i = -4*math.pi,4*math.pi,0.01 do
+	local err = math.abs(ParserHelp.cos(i) - math.cos(i))
+    Assert(max_error < 1e-14, max_error)
+	if err > max_error then
+		max_error = err
+		error_angle = i
+	end
+end
+Assert(max_error < 1e-14, max_error)
+
+max_error = 0
+error_angle = 0
+for i = -2*math.pi,2*math.pi,0.01 do
+	local err = math.abs(ParserHelp.tan(i) - math.tan(i))
+    Assert(max_error < 5e-10, tostring(max_error) .. " angle: " .. error_angle)
+	if err > max_error then
+		max_error = err
+		error_angle = i
+	end
+end
+Assert(max_error < 5e-10, tostring(max_error) .. " angle: " .. error_angle)
+
+print("\nAll trigonometry tests passed\n" .. test_counter .. " individual tests done\n")
