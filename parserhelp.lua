@@ -214,6 +214,10 @@ function ParserHelp.tan(l)
 		return nil, err_bool_arith
 	end
 
+	if (l * angle_convert) % math.pi == math.pi/2 then
+		return 0/0 -- NAN
+	end
+
 	local x,y = ParserHelp.sin(l), ParserHelp.cos(l)
 	return ParserHelp.sin(l) / ParserHelp.cos(l)
 end
