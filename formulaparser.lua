@@ -231,12 +231,13 @@ local Node = {
 Parser.vars = {ans = {val = 42}} -- predefine one variable
 
 function Parser:parse(str)
-	local pos = str:find("%/%*.*%*%/")
+	local pos = str:find("%/%/.*$") or str:find("%/%*.*%*%/")
 	local comment
 	if pos then
 		comment = str:sub(pos)
 	end
 	str = str:gsub("%/%*.*%*%/", "") -- remove comments
+	str = str:gsub("%/%/.*$", "") -- remove comments
 	str = str:gsub("%s+", "") -- remove whitespaces
 	str = str:gsub("‒", "-") -- replace emdash with minus
 	str = str:gsub("π", "pi") -- replace emdash with minus
