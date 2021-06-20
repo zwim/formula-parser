@@ -185,7 +185,7 @@ function ParserHelp.sin(l)
 	end
 	--bring to unit circle
 	local sign
-	local angle = math.abs(l * angle_convert)
+	local angle
 	if l > 0 then
 		sign = 1
 		angle = l * angle_convert
@@ -218,7 +218,6 @@ function ParserHelp.tan(l)
 		return 0/0 -- NAN
 	end
 
-	local x,y = ParserHelp.sin(l), ParserHelp.cos(l)
 	return ParserHelp.sin(l) / ParserHelp.cos(l)
 end
 
