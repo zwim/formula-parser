@@ -2,12 +2,12 @@
     Testsuite for parser.lua
 
     Author: Martin Zwicknagl
-    Version: 0.9.0
+    Version: 1.1.0
 ]]
 
 -- number of passes
 local passes = 32 -- set this for benchmark
-local repetitions = 32 -- how thorogh the test is
+local repetitions = 32 -- how thorough the test is
 math.randomseed(os.clock())
 
 local Parser = require("formulaparser")
@@ -15,12 +15,21 @@ local ParserHelp = require("parserhelp")
 
 print("This is a test for formulaparser.lua")
 
+print("TEST1:", tostring(Parser:eval("1,2,3,4")))
+print("TEST2:", tostring(Parser:eval("(1+3)")))
+
+print("TEST3:", tostring(Parser:eval("xx(1,(100,2))")))
+print("TEST4:", tostring(Parser:eval("10,(12,15)")))
+print("TEST3:", tostring(Parser:eval("xx(1,100,2)")))
+
+
+assert(1==2)
+
 local test_counter = 0
 local function Assert(a, b)
     test_counter = test_counter + 1
     assert(a, b, " " .. tostring(a) .. "    " .. tostring(b))
 end
-
 
 print("Help")
 print(tostring(Parser:eval("help()")))
@@ -204,7 +213,7 @@ for number = 0, passes do
     if number % 10 == 0 then print("Test run: " .. number) end
 
     --  print("numbers")
-    Assert(Parser:eval("0") == 0)
+    assert(Parser:eval("0") == 0)
     Assert(Parser:eval("pi") == math.pi)
     Assert(Parser:eval("exp(1)") == math.exp(1))
 
@@ -271,6 +280,9 @@ for number = 0, passes do
     Assert(Parser:eval("7 # 8") == -1)
     Assert(Parser:eval("3 ~ 5") == 6)
     Assert(Parser:eval("#8") == -9)
+
+	Assert(Parser:eval("4,-6") == -6)
+	Assert(Parser:eval("(1,2),(3,4)") == 4)
 
     Assert(Parser:eval("265/5/8") == 265 / 5 / 8)
 

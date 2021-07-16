@@ -2,7 +2,7 @@
     Helper functions for formulaparser
 
     Author: Martin Zwicknagl
-    Version: 0.9.0
+    Version: 1.1.0
 ]]
 
 local angle_convert = 1 -- use 1 for RAD, pi/180 for Deg, pi/200 for Gon
@@ -142,7 +142,10 @@ function ParserHelp.abs(l)
 	return math.abs(l)
 end
 
-function ParserHelp.identity(l) return l end
+function ParserHelp.identity(...)
+	local retval = {...}
+	return retval[#retval]
+end
 
 function ParserHelp.acos(l)
 	if l == nil then
@@ -406,9 +409,18 @@ function ParserHelp.getAngleMode()
 	end
 end
 
-function ParserHelp.seq(l, r)
-	if l == nil or r == nil then return nil, err_no_val end
-	return r
+function ParserHelp.seq(...)
+--	if l == nil or r == nil then return nil, err_no_val end --todo
+	return {...}
+end
+
+function ParserHelp.xx(...)
+	print("xxx xx" , #{...})
+	local retval = 0
+	for i,v in pairs{...} do
+		retval = retval + v
+	end
+	return retval/#{...}
 end
 
 function ParserHelp.ternary(l, m, r)
