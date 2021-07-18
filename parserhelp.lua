@@ -410,6 +410,19 @@ function ParserHelp.getAngleMode()
 	end
 end
 
+function ParserHelp.celsius2kelvin(val)
+	return val + 273.15
+end
+function ParserHelp.kelvin2celsius(val)
+	return val - 273.15
+end
+function ParserHelp.fahrenheit2kelvin(val)
+	return (val-32) * 5/9 + 273.15
+end
+function ParserHelp.kelvin2fahrenheit(val)
+	return (val-273.15) * 9/5 + 32
+end
+
 function ParserHelp.seq(...)
 --	if l == nil or r == nil then return nil, err_no_val end --todo
 	return {...}
