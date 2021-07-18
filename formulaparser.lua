@@ -1,7 +1,7 @@
 --[[ formulaparser
 
 Author: Martin Zwicknagl
-Version: 0.9.0
+Version: 1.1.0
 Original version from C# (2006; Martin Zwicknagl)
 Converted and optimized for LUA 2021
 
@@ -184,7 +184,9 @@ Parser.functions = { -- must be sorted alphabetically
 	{"acos(", ParserHelp.acos},
 	{"asin(", ParserHelp.asin},
 	{"atan(", ParserHelp.atan},
-	{"bug(", ParserHelp.bug}, {"cos(", ParserHelp.cos},
+	{"avg(", ParserHelp.avg},
+	{"bug(", ParserHelp.bug},
+	{"cos(", ParserHelp.cos},
 	{"eval(", ParserHelp.eval},
 	{"exp(", ParserHelp.exp},
 	{"floor(", ParserHelp.floor},
@@ -265,8 +267,8 @@ function Parser:parse(str)
 	str = str:gsub("%/%/.*$", "") -- remove comments
 	str = str:gsub("%s+", "") -- remove whitespaces
 	str = str:gsub("‒", "-") -- replace emdash with minus
-	str = str:gsub("π", "pi") -- replace emdash with minus
-	str = str:gsub("√", "sqrt") -- replace emdash with minus
+	str = str:gsub("π", "pi") -- replace pi
+	str = str:gsub("√", "sqrt") -- replace sqrt
 	local ret = self:_parse(str)
 	if ret then
 		ret.comment = comment
@@ -279,7 +281,7 @@ function Parser:_parse(str)
 		return {}
 	end
 
-	-- do this first, heuristically, we have always numbers
+	-- do this first, heuristically, we have many numbers
 	local value = tonumber(str)
 	if value then
 		return {val = value}
@@ -517,7 +519,11 @@ function Parser:eval(node, err)
 	if err then return nil, err end
 	local ret
 	ret, err = self:_eval(node, err)
-	return not err and ret, err
+	if type(ret) ~= "table" then
+		return not err and ret, err
+	else
+		return not err and ret[#ret], err
+	end
 end
 
 function Parser:_eval(node, err)
@@ -548,7 +554,18 @@ function Parser:_eval(node, err)
 				end
 				err = left_err or right_err or err
 				if err then return nil, err end
-				local ret, ret_err = node.func(left_eval, right_eval)
+				local ret, ret_err
+				if type(left_eval) == "table" and type(right_eval) == "table" then
+					ret, ret_err = node.func(unpack(left_eval), unpack(right_eval))
+				elseif type(left_eval) == "table" and type(right_eval) ~= "table" then
+					table.insert(left_eval, right_eval)
+					ret, ret_err = node.func(unpack(left_eval))
+				elseif type(left_eval) ~= "table" and type(right_eval) == "table" then
+					ret, ret_err = node.func(left_eval, unpack(right_eval))
+				else
+					ret, ret_err = node.func(left_eval, right_eval)
+				end
+
 				return ret, ret_err or err
 			end
 		end
@@ -565,7 +582,7 @@ function Parser:_eval(node, err)
 		return nil, "Recursive definition detected"
 	end
 
-	return nil, err -- todo check if error nec
+	return nil, err -- todo check if error recognized
 end
 
 function Parser:greek2text(str)

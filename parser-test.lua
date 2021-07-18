@@ -2,12 +2,12 @@
     Testsuite for parser.lua
 
     Author: Martin Zwicknagl
-    Version: 0.9.0
+    Version: 1.1.0
 ]]
 
 -- number of passes
 local passes = 32 -- set this for benchmark
-local repetitions = 32 -- how thorogh the test is
+local repetitions = 32 -- how thorough the test is
 math.randomseed(os.clock())
 
 local Parser = require("formulaparser")
@@ -20,7 +20,6 @@ local function Assert(a, b)
     test_counter = test_counter + 1
     assert(a, b, " " .. tostring(a) .. "    " .. tostring(b))
 end
-
 
 print("Help")
 print(tostring(Parser:eval("help()")))
@@ -204,7 +203,7 @@ for number = 0, passes do
     if number % 10 == 0 then print("Test run: " .. number) end
 
     --  print("numbers")
-    Assert(Parser:eval("0") == 0)
+    assert(Parser:eval("0") == 0)
     Assert(Parser:eval("pi") == math.pi)
     Assert(Parser:eval("exp(1)") == math.exp(1))
 
@@ -314,7 +313,7 @@ for number = 0, passes do
     Assert(Parser:eval("ld(1024)") == 10)
     Assert(Parser:eval("ln(e)") == 1)
     Assert(Parser:eval("log(0.001)") == -3)
-
+    Assert(Parser:eval("avg(1,2,3,4,5,6,7,8,9,10)") == 5.5)
     --  print("angle func")
     Parser:eval("setrad()")
 
@@ -408,11 +407,13 @@ for number = 0, passes do
 
     --  print("sequential")
     Assert(Parser:eval("3,4") == 4)
+    Assert(Parser:eval("4,-6") == -6)
     Assert(Parser:eval("1*2,3*5") == 15)
     Assert(Parser:eval("(1+2),(3*5)") == 15)
     Assert(Parser:eval("x=3,y=-12") == -12)
     Assert(Parser:eval("x") == 3)
     Assert(Parser:eval("y") == -12)
+    Assert(Parser:eval("(1,2),(3,4)") == 4)
 
     --  print("ternary op")
     Assert(Parser:eval("true?5:-5") == 5, Parser:eval("true?5:-5"))
