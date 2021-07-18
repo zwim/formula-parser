@@ -75,6 +75,7 @@ the angular functions can operate on degree, radiant and gon.
     "acos("
     "asin("
     "atan("
+    "avg("      average of multiple parameters
     "bug("      show hints for a bug
     "cos("
     "exp("
@@ -414,10 +415,10 @@ function ParserHelp.seq(...)
 	return {...}
 end
 
-function ParserHelp.xx(...)
-	print("xxx xx" , #{...})
+-- average
+function ParserHelp.avg(...)
 	local retval = 0
-	for i,v in pairs{...} do
+	for _,v in pairs{...} do
 		retval = retval + v
 	end
 	return retval/#{...}

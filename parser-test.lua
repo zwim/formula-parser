@@ -15,16 +15,6 @@ local ParserHelp = require("parserhelp")
 
 print("This is a test for formulaparser.lua")
 
-print("TEST1:", tostring(Parser:eval("1,2,3,4")))
-print("TEST2:", tostring(Parser:eval("(1+3)")))
-
-print("TEST3:", tostring(Parser:eval("xx(1,(100,2))")))
-print("TEST4:", tostring(Parser:eval("10,(12,15)")))
-print("TEST3:", tostring(Parser:eval("xx(1,100,2)")))
-
-
-assert(1==2)
-
 local test_counter = 0
 local function Assert(a, b)
     test_counter = test_counter + 1
@@ -281,9 +271,6 @@ for number = 0, passes do
     Assert(Parser:eval("3 ~ 5") == 6)
     Assert(Parser:eval("#8") == -9)
 
-	Assert(Parser:eval("4,-6") == -6)
-	Assert(Parser:eval("(1,2),(3,4)") == 4)
-
     Assert(Parser:eval("265/5/8") == 265 / 5 / 8)
 
     Assert(Parser:eval("2^1^3") == (2 ^ 1) ^ 3)
@@ -326,7 +313,7 @@ for number = 0, passes do
     Assert(Parser:eval("ld(1024)") == 10)
     Assert(Parser:eval("ln(e)") == 1)
     Assert(Parser:eval("log(0.001)") == -3)
-
+	Assert(Parser:eval("avg(1,2,3,4,5,6,7,8,9,10)") == 5.5)
     --  print("angle func")
     Parser:eval("setrad()")
 
@@ -420,11 +407,13 @@ for number = 0, passes do
 
     --  print("sequential")
     Assert(Parser:eval("3,4") == 4)
+	Assert(Parser:eval("4,-6") == -6)
     Assert(Parser:eval("1*2,3*5") == 15)
     Assert(Parser:eval("(1+2),(3*5)") == 15)
     Assert(Parser:eval("x=3,y=-12") == -12)
     Assert(Parser:eval("x") == 3)
     Assert(Parser:eval("y") == -12)
+	Assert(Parser:eval("(1,2),(3,4)") == 4)
 
     --  print("ternary op")
     Assert(Parser:eval("true?5:-5") == 5, Parser:eval("true?5:-5"))

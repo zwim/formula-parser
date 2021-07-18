@@ -184,7 +184,9 @@ Parser.functions = { -- must be sorted alphabetically
 	{"acos(", ParserHelp.acos},
 	{"asin(", ParserHelp.asin},
 	{"atan(", ParserHelp.atan},
-	{"bug(", ParserHelp.bug}, {"cos(", ParserHelp.cos},
+	{"avg(", ParserHelp.avg},
+	{"bug(", ParserHelp.bug},
+	{"cos(", ParserHelp.cos},
 	{"eval(", ParserHelp.eval},
 	{"exp(", ParserHelp.exp},
 	{"floor(", ParserHelp.floor},
@@ -204,7 +206,6 @@ Parser.functions = { -- must be sorted alphabetically
 	{"sin(", ParserHelp.sin},
 	{"sqrt(", ParserHelp.sqrt},
 	{"tan(", ParserHelp.tan},
-	{"xx(", ParserHelp.xx},
 }
 
 Parser.operators = { -- must be sorted by priority, least priority first
