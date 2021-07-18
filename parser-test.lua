@@ -413,7 +413,7 @@ for number = 0, passes do
     Assert(Parser:eval("x=3,y=-12") == -12)
     Assert(Parser:eval("x") == 3)
     Assert(Parser:eval("y") == -12)
-	Assert(Parser:eval("(1,2),(3,4)") == 4)
+    Assert(Parser:eval("(1,2),(3,4)") == 4)
 
     --  print("ternary op")
     Assert(Parser:eval("true?5:-5") == 5, Parser:eval("true?5:-5"))
