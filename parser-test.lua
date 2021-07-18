@@ -313,7 +313,7 @@ for number = 0, passes do
     Assert(Parser:eval("ld(1024)") == 10)
     Assert(Parser:eval("ln(e)") == 1)
     Assert(Parser:eval("log(0.001)") == -3)
-	Assert(Parser:eval("avg(1,2,3,4,5,6,7,8,9,10)") == 5.5)
+    Assert(Parser:eval("avg(1,2,3,4,5,6,7,8,9,10)") == 5.5)
     --  print("angle func")
     Parser:eval("setrad()")
 
@@ -407,7 +407,7 @@ for number = 0, passes do
 
     --  print("sequential")
     Assert(Parser:eval("3,4") == 4)
-	Assert(Parser:eval("4,-6") == -6)
+    Assert(Parser:eval("4,-6") == -6)
     Assert(Parser:eval("1*2,3*5") == 15)
     Assert(Parser:eval("(1+2),(3*5)") == 15)
     Assert(Parser:eval("x=3,y=-12") == -12)
