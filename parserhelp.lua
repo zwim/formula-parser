@@ -77,10 +77,14 @@ the angular functions can operate on degree, radiant and gon.
     "atan("
     "avg("      average of multiple parameters
     "bug("      show hints for a bug
+	"c2k("      Celsius to Fahrenheit
     "cos("
     "exp("
+	"f2k("      Fahrenheit to Kelvin
     "floor("    round down
     "getAngleMode(" Info: degree, radiant, gon; not for calculations
+	"k2c("      Kelvin to Celsius
+	"k2f("      Kelvin to Fahrenheit
     "kill("     delete a variable
     "ld("       logarithmus dualis
     "ln("       logarithmus naturalis
