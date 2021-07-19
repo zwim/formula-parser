@@ -77,10 +77,14 @@ the angular functions can operate on degree, radiant and gon.
     "atan("
     "avg("      average of multiple parameters
     "bug("      show hints for a bug
+	"c2k("      Celsius to Fahrenheit
     "cos("
     "exp("
+	"f2k("      Fahrenheit to Kelvin
     "floor("    round down
     "getAngleMode(" Info: degree, radiant, gon; not for calculations
+	"k2c("      Kelvin to Celsius
+	"k2f("      Kelvin to Fahrenheit
     "kill("     delete a variable
     "ld("       logarithmus dualis
     "ln("       logarithmus naturalis
@@ -408,6 +412,19 @@ function ParserHelp.getAngleMode()
 	else
 		return "gon"
 	end
+end
+
+function ParserHelp.celsius2kelvin(val)
+	return val + 273.15
+end
+function ParserHelp.kelvin2celsius(val)
+	return val - 273.15
+end
+function ParserHelp.fahrenheit2kelvin(val)
+	return (val-32) * 5/9 + 273.15
+end
+function ParserHelp.kelvin2fahrenheit(val)
+	return (val-273.15) * 9/5 + 32
 end
 
 function ParserHelp.seq(...)
