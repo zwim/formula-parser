@@ -77,14 +77,14 @@ the angular functions can operate on degree, radiant and gon.
     "atan("
     "avg("      average of multiple parameters
     "bug("      show hints for a bug
-	"c2k("      Celsius to Fahrenheit
+    "c2k("      Celsius to Fahrenheit
     "cos("
     "exp("
-	"f2k("      Fahrenheit to Kelvin
+    "f2k("      Fahrenheit to Kelvin
     "floor("    round down
     "getAngleMode(" Info: degree, radiant, gon; not for calculations
-	"k2c("      Kelvin to Celsius
-	"k2f("      Kelvin to Fahrenheit
+    "k2c("      Kelvin to Celsius
+    "k2f("      Kelvin to Fahrenheit
     "kill("     delete a variable
     "ld("       logarithmus dualis
     "ln("       logarithmus naturalis
@@ -120,13 +120,13 @@ Please note the offending formula and the output of 'showvars()'.
 ---------------------- additions to math ------------
 math.e = math.exp(1)
 function math.finite(value)
-    if not value then
+	if not value then
 		return nil
-    elseif type(value) == "string" then
-        value = tonumber(value)
-        if value == nil then return nil end
-    elseif type(value) ~= "number" then
-        return nil
+	elseif type(value) == "string" then
+		value = tonumber(value)
+		if value == nil then return nil end
+	elseif type(value) ~= "number" then
+		return nil
 	else
 		local value_str = tostring(value)
 		if value_str:find("inf") or value_str:find("nan") then
