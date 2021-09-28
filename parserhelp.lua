@@ -77,7 +77,7 @@ the angular functions can operate on degree, radiant and gon.
     "atan("
     "avg("      average of multiple parameters
     "bug("      show hints for a bug
-    "c2k("      Celsius to Fahrenheit
+    "c2k("      Celsius to Kelvin
     "cos("
     "exp("
     "f2k("      Fahrenheit to Kelvin
